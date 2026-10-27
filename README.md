@@ -4,11 +4,21 @@ SlovoKlad (Russian for “word treasure”) is a TUI dashboard and study aid. Yo
 
 # 2. QUICK START
 
-## 2.1 1. Install mise
+## 2.1 Prerequisites
+
+Install GNU FriBidi for your platform:
+
+* macOS: `brew install fribidi`
+* Debian/Ubuntu: `sudo apt install libfribidi0`
+* Fedora: `sudo dnf install fribidi`
+* Arch Linux: `sudo pacman -S fribidi`
+* Windows (MSYS2 MinGW 64-bit): `pacman -S mingw-w64-x86_64-fribidi`; ensure `C:\msys64\mingw64\bin` is on PATH so Ruby can find the DLL. 
+
+## 2.2 Install mise
 
 Download and install [mise](https://mise.jdx.dev). This automatically loads the correct Ruby version for the app the moment you enter the folder.
 
-## 2.2 Clone the Application
+## 2.3 Clone the Application
 
 Open your terminal and download this repository to your machine:
 
@@ -17,7 +27,7 @@ git clone https://github.com
 cd slovoklad
 ```
 
-## 2.3 Initialize & Install Dependencies (Gems)
+## 2.4 Initialize & Install Dependencies (Gems)
 
 Set up the workspace environment and download all required packages (such as ratatui_ruby and clipboard) via the bundler:
 
@@ -26,7 +36,7 @@ bundle init
 bundle install
 ```
 
-## 2.4 Launch the Application!
+## 2.5 Launch the Application!
 
 You are now ready to launch the dashboard. Provide the included example.json file to instantly seed your interface with the multi-language test environment:
 
@@ -34,7 +44,7 @@ You are now ready to launch the dashboard. Provide the included example.json fil
 bundle exec ruby app.rb example.json
 ```
 
-## 2.5 Available Command Line Options
+## 2.6 Available Command Line Options
 
 You can inspect all available commands, input operations, and export configurations by using the standard help flags:
 
@@ -120,9 +130,10 @@ For iTerm2 only: turn off **Settings > Profiles > Terminal > Save lines to scrol
 
 | Shortcut | Action |
 |---|---|
-| `Control+W`, `Option++Backspace` | Delete the word to the left of the insertion point. |
-| `Fn+Option+Backspace` | Delete the word to the right of the insertion point. |
+| `Control+W`, `Option+Backspace` | Delete the word to the left of the insertion point. |
+| `Option+D`, `Fn+Option+Backspace` | Delete the word to the right of the insertion point. |
 | `Control+H`, `Backspace` | Delete the character to the left of the insertion point. |
+| `Backspace` | Delete the character to the left of the insertion point. |
 | `Control+D`, `Fn+Backspace` | Delete the character to the right of the insertion point. |
 | `Control+K` | Delete the text from the insertion point to the end of the line. |
 | `Control+U` | Delete the text from the insertion point to the beginning of the line. |
