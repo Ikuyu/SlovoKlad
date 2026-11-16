@@ -1,0 +1,68 @@
+# Personal appearance and behavior
+theme = iTerm2 Dark Background
+background = #000000
+
+shell-integration = none
+cursor-style = block
+cursor-style-blink = true
+font-size = 20
+
+# Slovoklad-specific settings
+macos-option-as-alt = left
+
+font-family = "JetBrains Mono", "Victor Mono"
+font-style = "Regular"
+font-style-italic = "Italic"
+
+# Custom keybindings
+
+# Editing and clipboard
+keybind = super+a=csi:97;6u
+keybind = ctrl+shift+a=csi:97;6u
+keybind = super+c=text:\x03
+keybind = super+v=text:\x16
+keybind = super+shift+c=copy_to_clipboard
+keybind = super+shift+v=paste_from_clipboard
+keybind = super+x=text:\x18
+keybind = super+z=text:\x1a
+keybind = super+shift+z=text:\x19
+keybind = ctrl+shift+z=csi:122;6u
+
+keybind = super+backspace=text:\x15
+keybind = super+shift+backspace=text:\x15
+keybind = alt+delete=esc:d
+
+# Navigation
+keybind = super+up=csi:H
+keybind = super+down=csi:F
+keybind = super+left=csi:H
+keybind = super+right=csi:F
+
+keybind = shift+page_up=csi:5;2~
+keybind = shift+page_down=csi:6;2~
+
+keybind = super+shift+up=csi:1;10H
+keybind = super+shift+down=csi:1;10F
+keybind = super+shift+left=csi:1;10H
+keybind = super+shift+right=csi:1;10F
+
+# Search and application shortcuts
+keybind = super+f=text:\x06
+keybind = super+r=text:\x08
+keybind = super+shift+f=text:\x08
+keybind = ctrl+shift+f=csi:102;6u
+keybind = super+g=text:n
+keybind = super+shift+g=text:N
+
+keybind = ctrl+shift+l=csi:108;6u
+keybind = ctrl+shift+b=csi:98;6u
+
+# Number-row shortcuts
+keybind = super+physical:one=esc:1
+keybind = super+physical:two=esc:2
+keybind = super+physical:three=esc:3
+keybind = super+physical:four=esc:4
+keybind = super+physical:five=esc:5
+
+# Type a combining acute accent (U+0301) for Russian stress marks
+keybind = ctrl+quote=text:\u{0301}

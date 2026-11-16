@@ -1,0 +1,15 @@
+# Geheimen en lokale instellingen
+
+# Tijdelijke bestanden
+*.log
+test.json
+todo.txt
+niqquds_test.rb
+languages.json
+/.zed/
+/audio/unused/
+build.rbs
+/dist/
+
+# Editor- en besturingssysteembestanden
+.DS_Store

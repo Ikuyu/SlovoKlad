@@ -1,0 +1,544 @@
+{
+  "subjects": [
+    {
+      "id": "1931cddb-dea4-4de1-9c6a-d9868b4d1dc6",
+      "name": "العربية",
+      "sources": [
+        {
+          "id": "ea408b3b-cf4e-4698-ac6b-57ea85a27e13",
+          "name": "Unknown",
+          "decks": [
+            {
+              "id": "49094c41-d574-4e3b-9e67-99e7d2a2eee1",
+              "name": "Examples",
+              "cards": [
+                {
+                  "id": "a8ad042b-2a7d-445e-b7c6-80650139220a",
+                  "study": true,
+                  "term": "مرحبا",
+                  "context": "مرحبا، كيف حالك؟",
+                  "meaning": "Hallo — Hallo, hoe gaat het?",
+                  "interval": 1,
+                  "next_review_at": "2026-11-10T12:51:33.461294+00:00"
+                },
+                {
+                  "id": "43edac53-64ce-4021-b762-e15670065f5f",
+                  "study": true,
+                  "term": "شكرا",
+                  "context": "شكرا جزيلا لك.",
+                  "meaning": "Dank je — Heel erg bedankt.",
+                  "interval": 1,
+                  "next_review_at": "2026-11-10T12:51:33.461294+00:00"
+                },
+                {
+                  "id": "73711d26-7a83-4fde-b009-41c9d8bfc85d",
+                  "study": true,
+                  "term": "كتاب",
+                  "context": "هذا كتاب جديد.",
+                  "meaning": "Boek — Dit is een nieuw boek.",
+                  "interval": 1,
+                  "next_review_at": "2026-11-10T12:51:33.461294+00:00"
+                },
+                {
+                  "id": "ebcbbdda-8e9f-4f8b-9bf4-16859a4fb477",
+                  "study": true,
+                  "term": "ماء",
+                  "context": "أريد ماء من فضلك.",
+                  "meaning": "Water — Ik wil graag water.",
+                  "interval": 1,
+                  "next_review_at": "2026-11-10T12:51:33.461294+00:00"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "a96d1aa6-b4e5-4c3d-b35b-40af8af44f63",
+      "name": "עברית",
+      "sources": [
+        {
+          "id": "8b20111e-4f65-4dc1-b01c-19a950cf7cc2",
+          "name": "Unknown",
+          "decks": [
+            {
+              "id": "25d574b4-679d-46fc-99e6-ed42acf2d2a3",
+              "name": "Examples",
+              "cards": [
+                {
+                  "id": "12378044-8c40-443d-8af0-ee11d6f39863",
+                  "study": true,
+                  "term": "שלום",
+                  "context": "שלום, מה שלומך?",
+                  "meaning": "Hallo — Hallo, hoe gaat het?",
+                  "interval": 1,
+                  "next_review_at": "2026-11-10T12:51:33.461294+00:00"
+                },
+                {
+                  "id": "b46505ad-ac31-481b-94de-1d971978150f",
+                  "study": true,
+                  "term": "תודה",
+                  "context": "תודה רבה על העזרה.",
+                  "meaning": "Dank je — Hartelijk dank voor de hulp.",
+                  "interval": 1,
+                  "next_review_at": "2026-11-10T12:51:33.461294+00:00"
+                },
+                {
+                  "id": "17d39c43-fbab-4256-a524-5b5eb7f43348",
+                  "study": true,
+                  "term": "ספר",
+                  "context": "זה ספר מעניין.",
+                  "meaning": "Boek — Dit is een interessant boek.",
+                  "interval": 1,
+                  "next_review_at": "2026-11-10T12:51:33.461294+00:00"
+                },
+                {
+                  "id": "5f614675-627f-4462-9c95-59d4c6981729",
+                  "study": true,
+                  "term": "מים",
+                  "context": "אני רוצה מים, בבקשה.",
+                  "meaning": "Water — Ik wil graag water.",
+                  "interval": 1,
+                  "next_review_at": "2026-11-10T12:51:33.461294+00:00"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "fa0bbc85-86a6-4429-8a5f-abe4df879c71",
+      "name": "Русский",
+      "sources": [
+        {
+          "id": "21dc48b6-e6a2-48cd-8d6c-c685b569b29a",
+          "name": "Unknown",
+          "decks": [
+            {
+              "id": "07002ff4-2cc4-47b1-9ae2-c978751694c5",
+              "name": "Examples",
+              "cards": [
+                {
+                  "id": "2fe85b4f-11ac-46fa-b76b-f930755b7589",
+                  "study": true,
+                  "term": "привет",
+                  "context": "Привет, как дела?",
+                  "meaning": "Hallo — Hallo, hoe gaat het?",
+                  "interval": 1,
+                  "next_review_at": "2026-11-10T12:51:33.461294+00:00"
+                },
+                {
+                  "id": "42055c58-212b-49e4-84ee-95e0a9c47c3e",
+                  "study": true,
+                  "term": "спасибо",
+                  "context": "Большое спасибо за помощь.",
+                  "meaning": "Dank je — Hartelijk dank voor de hulp.",
+                  "interval": 1,
+                  "next_review_at": "2026-11-10T12:51:33.461294+00:00"
+                },
+                {
+                  "id": "00f41ba2-a3e6-49f1-ab19-da5196632cbd",
+                  "study": true,
+                  "term": "книга",
+                  "context": "Это интересная книга.",
+                  "meaning": "Boek — Dit is een interessant boek.",
+                  "interval": 1,
+                  "next_review_at": "2026-11-10T12:51:33.461294+00:00"
+                },
+                {
+                  "id": "1702eeab-c70a-4155-bb35-dc070286e7a4",
+                  "study": true,
+                  "term": "вода",
+                  "context": "Мне нужна вода, пожалуйста.",
+                  "meaning": "Water — Ik wil graag water.",
+                  "interval": 1,
+                  "next_review_at": "2026-11-10T12:51:33.461294+00:00"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "7d2d996a-7f32-4404-8972-a9ae0078d18f",
+      "name": "中文",
+      "sources": [
+        {
+          "id": "113e64cd-5113-42a8-b6fc-59a8e23c1447",
+          "name": "Unknown",
+          "decks": [
+            {
+              "id": "ade1a425-6a37-4729-83a6-fc1355e24c11",
+              "name": "Examples",
+              "cards": [
+                {
+                  "id": "af556e69-8831-47d3-b741-405b2a9869bd",
+                  "study": true,
+                  "term": "你好",
+                  "context": "你好，你好吗？",
+                  "meaning": "Hallo — Hallo, hoe gaat het?",
+                  "interval": 1,
+                  "next_review_at": "2026-11-10T12:51:33.461294+00:00"
+                },
+                {
+                  "id": "a2fa0c82-e5d5-4590-bd5a-0fa9a2a1757e",
+                  "study": true,
+                  "term": "谢谢",
+                  "context": "非常感谢你的帮助。",
+                  "meaning": "Dank je — Hartelijk dank voor je hulp.",
+                  "interval": 1,
+                  "next_review_at": "2026-11-10T12:51:33.461294+00:00"
+                },
+                {
+                  "id": "5b34e2c4-8ad5-40d5-b2ad-f3cd39fc7ea9",
+                  "study": true,
+                  "term": "书",
+                  "context": "这是一本有趣的书。",
+                  "meaning": "Boek — Dit is een interessant boek.",
+                  "interval": 1,
+                  "next_review_at": "2026-11-10T12:51:33.461294+00:00"
+                },
+                {
+                  "id": "fc4db05e-5f59-4227-937f-87c0945f6b25",
+                  "study": true,
+                  "term": "水",
+                  "context": "请给我一些水。",
+                  "meaning": "Water — Geef me alsjeblieft wat water.",
+                  "interval": 1,
+                  "next_review_at": "2026-11-10T12:51:33.461294+00:00"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "cb716462-2809-414c-babd-42031b39ef6b",
+      "name": "日本語",
+      "sources": [
+        {
+          "id": "3da08726-f5a1-4e8b-9499-d1c2821c2b40",
+          "name": "Unknown",
+          "decks": [
+            {
+              "id": "66dab16e-a78e-4e35-8ec6-c7e940a62b26",
+              "name": "Examples",
+              "cards": [
+                {
+                  "id": "23925760-829c-4304-a020-6a380ab6f4d1",
+                  "study": true,
+                  "term": "こんにちは",
+                  "context": "こんにちは、お元気ですか。",
+                  "meaning": "Hallo — Hallo, hoe gaat het?",
+                  "interval": 1,
+                  "next_review_at": "2026-11-10T12:51:33.461294+00:00"
+                },
+                {
+                  "id": "4db52621-6901-4894-ab7d-f79e21732518",
+                  "study": true,
+                  "term": "ありがとう",
+                  "context": "手伝ってくれてありがとう。",
+                  "meaning": "Dank je — Bedankt dat je me helpt.",
+                  "interval": 1,
+                  "next_review_at": "2026-11-10T12:51:33.461294+00:00"
+                },
+                {
+                  "id": "a942447a-cffe-4dfd-abc9-b10cb3eab57d",
+                  "study": true,
+                  "term": "本",
+                  "context": "これは面白い本です。",
+                  "meaning": "Boek — Dit is een interessant boek.",
+                  "interval": 1,
+                  "next_review_at": "2026-11-10T12:51:33.461294+00:00"
+                },
+                {
+                  "id": "85b7ded0-421c-4450-9a80-5ca2dd3fbad9",
+                  "study": true,
+                  "term": "水",
+                  "context": "水をください。",
+                  "meaning": "Water — Water, alstublieft.",
+                  "interval": 1,
+                  "next_review_at": "2026-11-10T12:51:33.461294+00:00"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e2705c1a-8ad5-4928-853e-8bda0b5d5f0d",
+      "name": "한국어",
+      "sources": [
+        {
+          "id": "a7b72fd8-8614-4690-9c56-ff130ca4c21d",
+          "name": "Unknown",
+          "decks": [
+            {
+              "id": "34bddb42-3bfe-4ba4-9085-8f710f51c2cb",
+              "name": "Examples",
+              "cards": [
+                {
+                  "id": "5ca8db3f-04f0-4f9e-95a3-af79323c7425",
+                  "study": true,
+                  "term": "안녕하세요",
+                  "context": "안녕하세요, 잘 지내세요?",
+                  "meaning": "Hallo — Hallo, hoe gaat het?",
+                  "interval": 1,
+                  "next_review_at": "2026-11-10T12:51:33.461294+00:00"
+                },
+                {
+                  "id": "7d2380cb-f229-4f94-b34d-48b4225026d2",
+                  "study": true,
+                  "term": "감사합니다",
+                  "context": "도와주셔서 감사합니다.",
+                  "meaning": "Dank je — Bedankt voor uw hulp.",
+                  "interval": 1,
+                  "next_review_at": "2026-11-10T12:51:33.461294+00:00"
+                },
+                {
+                  "id": "9036f751-400b-4667-9c12-69a492728b7c",
+                  "study": true,
+                  "term": "책",
+                  "context": "이것은 재미있는 책이에요.",
+                  "meaning": "Boek — Dit is een interessant boek.",
+                  "interval": 1,
+                  "next_review_at": "2026-11-10T12:51:33.461294+00:00"
+                },
+                {
+                  "id": "f11622de-63bf-4cfe-9973-41208fd06f02",
+                  "study": true,
+                  "term": "물",
+                  "context": "물 좀 주세요.",
+                  "meaning": "Water — Geef me alstublieft wat water.",
+                  "interval": 1,
+                  "next_review_at": "2026-11-10T12:51:33.461294+00:00"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "0f135ef2-a01d-432e-814d-6643bec38cbb",
+      "name": "Magyar",
+      "sources": [
+        {
+          "id": "14677a9a-16c2-4d13-8717-abe9e67ceeb9",
+          "name": "Unknown",
+          "decks": [
+            {
+              "id": "579b2fd3-49d7-444e-897b-6140de45e8ff",
+              "name": "Examples",
+              "cards": [
+                {
+                  "id": "82c65177-ab9e-465a-93c8-a4b636bc5c6f",
+                  "study": true,
+                  "term": "szia",
+                  "context": "Szia, hogy vagy?",
+                  "meaning": "Hallo — Hallo, hoe gaat het?",
+                  "interval": 1,
+                  "next_review_at": "2026-11-10T12:51:33.461294+00:00"
+                },
+                {
+                  "id": "b2b6b67a-4efd-4122-95f0-ea5a7bec52ca",
+                  "study": true,
+                  "term": "köszönöm",
+                  "context": "Nagyon köszönöm a segítséget.",
+                  "meaning": "Dank je — Hartelijk dank voor de hulp.",
+                  "interval": 1,
+                  "next_review_at": "2026-11-10T12:51:33.461294+00:00"
+                },
+                {
+                  "id": "9eab89ef-d566-4ba6-8555-a45acf0e72a4",
+                  "study": true,
+                  "term": "könyv",
+                  "context": "Ez egy érdekes könyv.",
+                  "meaning": "Boek — Dit is een interessant boek.",
+                  "interval": 1,
+                  "next_review_at": "2026-11-10T12:51:33.461294+00:00"
+                },
+                {
+                  "id": "b6fe97ac-c50c-4ebe-8c42-ef663fdefa5c",
+                  "study": true,
+                  "term": "víz",
+                  "context": "Kérek egy pohár vizet.",
+                  "meaning": "Water — Ik wil graag een glas water.",
+                  "interval": 1,
+                  "next_review_at": "2026-11-10T12:51:33.461294+00:00"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "f88c5188-36bb-42bc-8470-389bcec8bb51",
+      "name": "Türkçe",
+      "sources": [
+        {
+          "id": "164ef0b0-6c64-4301-b0e3-821b05589c7f",
+          "name": "Unknown",
+          "decks": [
+            {
+              "id": "8089a022-3075-452e-beb6-747f41ed56b7",
+              "name": "Examples",
+              "cards": [
+                {
+                  "id": "def36d0d-193a-4c00-a35b-ae9c24c1de88",
+                  "study": true,
+                  "term": "merhaba",
+                  "context": "Merhaba, nasılsın?",
+                  "meaning": "Hallo — Hallo, hoe gaat het?",
+                  "interval": 1,
+                  "next_review_at": "2026-11-10T12:51:33.461294+00:00"
+                },
+                {
+                  "id": "906fa679-fdf2-4c39-8a0b-ce085b569313",
+                  "study": true,
+                  "term": "teşekkürler",
+                  "context": "Yardımın için teşekkürler.",
+                  "meaning": "Dank je — Bedankt voor je hulp.",
+                  "interval": 1,
+                  "next_review_at": "2026-11-10T12:51:33.461294+00:00"
+                },
+                {
+                  "id": "a56109af-1f39-4e49-9f94-207036a73b89",
+                  "study": true,
+                  "term": "kitap",
+                  "context": "Bu ilginç bir kitap.",
+                  "meaning": "Boek — Dit is een interessant boek.",
+                  "interval": 1,
+                  "next_review_at": "2026-11-10T12:51:33.461294+00:00"
+                },
+                {
+                  "id": "cfa288e9-5f0a-44b9-a8fe-37f28771c9a9",
+                  "study": true,
+                  "term": "su",
+                  "context": "Biraz su alabilir miyim?",
+                  "meaning": "Water — Mag ik wat water?",
+                  "interval": 1,
+                  "next_review_at": "2026-11-10T12:51:33.461294+00:00"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "4772a3db-7dbc-45e2-ac2f-03d9e129ae5e",
+      "name": "English",
+      "sources": [
+        {
+          "id": "cdb36e3d-0879-48f3-b011-81c0433b771b",
+          "name": "Unknown",
+          "decks": [
+            {
+              "id": "5e12abf1-5a2e-4b37-88ee-cc078589f6db",
+              "name": "Examples",
+              "cards": [
+                {
+                  "id": "b334342c-1284-4047-aa35-755d7eba3684",
+                  "study": true,
+                  "term": "hello",
+                  "context": "Hello, how are you?",
+                  "meaning": "Hallo — Hallo, hoe gaat het?",
+                  "interval": 1,
+                  "next_review_at": "2026-11-10T12:51:33.461294+00:00"
+                },
+                {
+                  "id": "e760c08c-c47f-4cbe-bfc4-fed5b7a7e0fc",
+                  "study": true,
+                  "term": "thank you",
+                  "context": "Thank you for your help.",
+                  "meaning": "Dank je — Bedankt voor je hulp.",
+                  "interval": 1,
+                  "next_review_at": "2026-11-10T12:51:33.461294+00:00"
+                },
+                {
+                  "id": "f900efcb-194a-487b-bc20-8a39dd0ea6ee",
+                  "study": true,
+                  "term": "book",
+                  "context": "This is an interesting book.",
+                  "meaning": "Boek — Dit is een interessant boek.",
+                  "interval": 1,
+                  "next_review_at": "2026-11-10T12:51:33.461294+00:00"
+                },
+                {
+                  "id": "4ee441ad-20f0-4611-ae63-1999973cd86e",
+                  "study": true,
+                  "term": "water",
+                  "context": "Could I have some water, please?",
+                  "meaning": "Water — Mag ik alstublieft wat water?",
+                  "interval": 1,
+                  "next_review_at": "2026-11-10T12:51:33.461294+00:00"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "82dd779a-a104-4c1b-945f-fb40d06b5051",
+      "name": "Ελληνικά",
+      "sources": [
+        {
+          "id": "3e7bee7f-6557-43f4-a7f8-283ffe3442d9",
+          "name": "Unknown",
+          "decks": [
+            {
+              "id": "69d0d880-8c5c-48a9-8a9e-9283a3bb5597",
+              "name": "Examples",
+              "cards": [
+                {
+                  "id": "eedd086f-407a-49fb-ae84-e780915d8b60",
+                  "study": true,
+                  "term": "γεια σου",
+                  "context": "Γεια σου, τι κάνεις;",
+                  "meaning": "Hallo — Hallo, hoe gaat het?",
+                  "interval": 1,
+                  "next_review_at": "2026-11-10T12:51:33.461294+00:00"
+                },
+                {
+                  "id": "ffea33ca-f7ac-48a7-8b71-6e9ca039c09e",
+                  "study": true,
+                  "term": "ευχαριστώ",
+                  "context": "Ευχαριστώ πολύ για τη βοήθεια.",
+                  "meaning": "Dank je — Hartelijk dank voor de hulp.",
+                  "interval": 1,
+                  "next_review_at": "2026-11-10T12:51:33.461294+00:00"
+                },
+                {
+                  "id": "76e30b11-4177-404f-9e43-c00dd2d7af21",
+                  "study": true,
+                  "term": "βιβλίο",
+                  "context": "Αυτό είναι ένα ενδιαφέρον βιβλίο.",
+                  "meaning": "Boek — Dit is een interessant boek.",
+                  "interval": 1,
+                  "next_review_at": "2026-11-10T12:51:33.461294+00:00"
+                },
+                {
+                  "id": "4edbd2f2-d5d3-4925-ae9f-a9aee90e8c86",
+                  "study": true,
+                  "term": "νερό",
+                  "context": "Θα ήθελα λίγο νερό, παρακαλώ.",
+                  "meaning": "Water — Ik wil graag wat water, alstublieft.",
+                  "interval": 1,
+                  "next_review_at": "2026-11-10T12:51:33.461294+00:00"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
