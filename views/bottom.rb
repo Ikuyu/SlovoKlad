@@ -1109,10 +1109,18 @@ def normal_segmented_line(context)
   }
   active_strat = AppConfig.settings.study_strategy || :fronts_random
   strat_code = strategy_labels[active_strat] || AppConfig.settings.language_string(:study_modus_front)
+  selected_row_number = if @active_focus == :tree
+                          tree_context = tree_pagination_context
+                          tree_context ? tree_context[:selected_row] + 1 : '-'
+                        elsif @active_focus == :table && context[:deck_selected] && @table_state&.respond_to?(:selected)
+                          selected = @table_state.selected
+                          selected.nil? ? '-' : selected.to_i + 1
+                        else
+                          '-'
+                        end
 
   middle = [
-    span("⌨:#{os_keyboard_layout}   #{indicator}   #{marked_text(context)}   M:#{strat_code}",
-         context[:default_style])
+    context[:default_style])
   ]
 
   [left, middle]
