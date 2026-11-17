@@ -1,6 +1,7 @@
 # require 'yaml' # already required in app.rb
 require 'yaml'
 require 'fileutils'
+require 'rbconfig'
 
 module AppConfig
   MARKERS = {
@@ -50,33 +51,33 @@ module AppConfig
     study_strategy: :fronts_random # deze setting wordt niet opgeslagen; de gebruiker moet dit niet (nog) niet zelf kunnen aanpasen
   }.freeze
 
-  # The file where the settings are stored
-  # Linux: ~/.config/app_name/settings.yml
-  #
-  CONFIG_FILE = File.join(Dir.pwd, 'config', 'settings.yml').freeze # TODO: test/use the disabled code (self.determine_config_path) below
+  APP_INFO_FILE = File.expand_path('../app_info.yml', __dir__).freeze
+  APP_NAME = YAML.safe_load(
+    File.read(APP_INFO_FILE),
+    permitted_classes: [],
+    aliases: false
+  ).fetch('app_name').to_s.freeze
+  LEGACY_CONFIG_FILE = File.expand_path('settings.yml', __dir__).freeze
+
+  # Store user settings in the platform's standard per-user config directory.
+  CONFIG_FILE = begin
+    file_name = 'settings.yml'
+    if Gem.win_platform?
+      base_dir = ENV['APPDATA'] || File.join(Dir.home, 'AppData', 'Roaming')
+      File.join(base_dir, APP_NAME, file_name)
+    elsif RbConfig::CONFIG['host_os'] =~ /mac|darwin/i
+      File.join(Dir.home, 'Library', 'Application Support', APP_NAME, file_name)
+    else
+      base_dir = ENV['XDG_CONFIG_HOME'] || File.join(Dir.home, '.config')
+      File.join(base_dir, APP_NAME, file_name)
+    end
+  end.freeze
 
   # Ensure you can call AppConfig.settings from anywhere
   def self.settings
     @settings ||= Settings.new
   end
 
-  #   def self.determine_config_path
-  #     app_name = @app_name
-  #     file_name = 'settings.yml'
-  #
-  #     if Gem.win_platform?
-  #       # Windows: C:\Users\Naam\AppData\Roaming\app_name\settings.yml
-  #       base_dir = ENV['APPDATA'] || File.join(Dir.home, 'AppData', 'Roaming')
-  #       File.join(base_dir, app_name, file_name)
-  #     elsif RbConfig::CONFIG['host_os'] =~ /mac|darwin/
-  #       # macOS: /Users/Naam/Library/Application Support/app_name/settings.yml
-  #       File.join(Dir.home, 'Library', 'Application Support', app_name, file_name)
-  #     else
-  #       # Linux / BSD: /home/naam/.config/app_name/settings.yml
-  #       base_dir = ENV['XDG_CONFIG_HOME'] || File.join(Dir.home, '.config') [1, 2]
-  #       File.join(base_dir, app_name, file_name)
-  #     end
-  #   end
 end
 
 # The Settings class is only required for loading and saving the stettings
@@ -103,9 +104,11 @@ class Settings
     @custom_theme_path          = nil
     @dynamic_theme_items        = {} # Stores running hex updates in memory
 
-    # 🎯 STAP 2: Overschrijf de defaults nu pas met de waarden van de schijf
-    # Remove 'return if' so the method always completes initialization.
+    # Load existing settings (or migrate the old config/settings.yml file).
     load
+    # Create the user config file on first launch so the platform folder exists
+    # even when the user exits without changing a setting.
+    save unless File.exist?(AppConfig::CONFIG_FILE)
   end
 
   def handwritten?(lang_key)
@@ -215,6 +218,7 @@ class Settings
 
   # Load all settings from YAML-file (if the file exists)
   def load
+    migrate_legacy_config unless File.exist?(AppConfig::CONFIG_FILE)
     return false unless File.exist?(AppConfig::CONFIG_FILE)
 
     raw_yaml = File.read(AppConfig::CONFIG_FILE)
@@ -271,6 +275,14 @@ class Settings
   rescue StandardError
     @corrupt_on_load = true
     false
+  end
+
+  def migrate_legacy_config
+    legacy_file = AppConfig::LEGACY_CONFIG_FILE
+    return unless File.file?(legacy_file)
+
+    FileUtils.mkdir_p(File.dirname(AppConfig::CONFIG_FILE))
+    FileUtils.cp(legacy_file, AppConfig::CONFIG_FILE)
   end
 
   private

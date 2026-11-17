@@ -6,6 +6,7 @@ test.json
 todo.txt
 niqquds_test.rb
 languages.json
+config/settings.yml
 /.zed/
 /audio/unused/
 build.rbs

@@ -1111,7 +1111,7 @@ def normal_segmented_line(context)
   strat_code = strategy_labels[active_strat] || AppConfig.settings.language_string(:study_modus_front)
 
   middle = [
-    span("#{indicator}   #{marked_text(context)}   M:#{strat_code}",
+    span("⌨:#{os_keyboard_layout}   #{indicator}   #{marked_text(context)}   M:#{strat_code}",
          context[:default_style])
   ]
 
