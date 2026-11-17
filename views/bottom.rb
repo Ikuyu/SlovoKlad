@@ -1120,7 +1120,8 @@ def normal_segmented_line(context)
                         end
 
   middle = [
-    context[:default_style])
+    span("⌨:#{os_keyboard_layout}   →:#{selected_row_number}   #{indicator}   #{marked_text(context)}   M:#{strat_code}",
+         context[:default_style])
   ]
 
   [left, middle]
