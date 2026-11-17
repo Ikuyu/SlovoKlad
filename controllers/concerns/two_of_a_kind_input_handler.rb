@@ -117,7 +117,7 @@ module TwoOfAKindInputHandler
     raw_key_str = key.to_s.sub(/\A:/, '')
     key_str = raw_key_str.downcase
 
-    is_enter = ['enter', 'return', "\r", "\n"].include?(key_str)
+    is_enter = ['space', ' ', 'enter', 'return', "\r", "\n"].include?(key_str)
 
     normalized_modifiers = modifiers.map(&:to_s).map(&:downcase)
     total_cards = @user_hand.length
@@ -243,7 +243,7 @@ module TwoOfAKindInputHandler
     end
 
     case key_str
-    when 'e', 'f2'
+    when 'f2'
       was_already_paused = (@test_timer_paused == true)
       test_toggle_pause unless was_already_paused
 
@@ -283,7 +283,7 @@ module TwoOfAKindInputHandler
 
       @active_focus = :study_focus_mode
       @last_focus = :study_focus_mode
-      @current_study_mode = :drill
+      @current_study_mode = :two_of_a_kind
 
       @test_last_tick_time = Process.clock_gettime(Process::CLOCK_MONOTONIC) unless was_already_paused
       test_toggle_pause unless was_already_paused

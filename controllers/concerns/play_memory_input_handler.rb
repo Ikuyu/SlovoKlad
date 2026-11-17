@@ -97,7 +97,7 @@ module PlayMemoryInputHandler
       end
       return true
 
-    when 'enter', "\r", "\n", 'f2'
+    when 'f2'
       was_already_paused = (@test_timer_paused == true)
       test_toggle_pause unless was_already_paused
 

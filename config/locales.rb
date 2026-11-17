@@ -345,7 +345,7 @@ module AppTranslations
         - have been tested within time (Q & MC); or
         - are paired as a pair in the Memory or Two of a Kind game (PM, TK).
 
-        Note: The J, K, and E keys are used in PM to enter codes.
+        Note: The J and K keys are used in PM to enter codes.
 
         Control+P, K, ↑                : Row up (D, PM, TK)
         Control+N, J, ↓                : Row down / up (D, PM, TK)
@@ -357,10 +357,10 @@ module AppTranslations
         F5                             : Pause (D, Q, MC & PM, TK)
         S                              : Switch seconds timer (D)
         T                              : Toggle timer (D)
-        Space                          : Show answer (D, Q) / next card (Q)
+        Space, Enter                   : Show answer (D, Q) / next card (Q)
         1 2 3 4                        : Answer (MC)
         Tab                            : Exclude card from future exercises (D, Q & MC) & show next card (Q & MC) | I don’t have that card (TK)
-        Enter, E, F2                   : Edit card (D, Q, MC & PM) | Ask a card / Hand over a card (TK)
+        F2                             : Edit card (D, Q, MC & PM) | Ask a card / Hand over a card (TK)
 
       TEXT
       help_input_fields: <<~TEXT
@@ -748,7 +748,7 @@ module AppTranslations
         - zijn getest binnen de tijd (S & O);
         - als paar zijn gekoppeld in het Memory of Duo spel (MC, TK).
 
-        Opmerking: De J-, K- en E-toetsen worden in PM gebruikt om codes in te voeren.
+        Opmerking: De J- en K-toetsen worden in PM gebruikt om codes in te voeren.
 
         Control+P, K, ↑                : Rij omhoog (S, PM, TK)
         Control+N, J, ↓                : Rij omlaag (S, PM, TK)
@@ -760,10 +760,10 @@ module AppTranslations
         F5                             : Pauzeren (S, O, MK & SM, TK)
         S                              : Wissel seconden timer (D)
         T                              : Zet timer aan/uit (D)
-        Space                          : Toon antwoord (S, O) / volgende kaart (O)
+        Space, Enter                   : Toon antwoord (S, O) / volgende kaart (O)
         1 2 3 4                        : Antwoord (MK)
         Tab                            : Kaart uitsluiten van toekomstige oefeningen (S, O & MK) & toon volgende kaart (O & MK) | Die kaart heb ik niet (TK)
-        Enter, E, F2                   : Kaart bewerken (S, O, MK & SM) | Kaart vragen / kaart afstaan (TK)
+        F2                             : Kaart bewerken (S, O, MK & SM) | Kaart vragen / kaart afstaan (TK)
       TEXT
       help_input_fields: <<~TEXT
         === BEWERKEN ===

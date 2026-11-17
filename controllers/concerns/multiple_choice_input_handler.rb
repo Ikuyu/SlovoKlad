@@ -85,7 +85,7 @@ module MultipleChoiceInputHandler
     # 📑 OVERIGE TOETSEN (Spatiebalk & Edit)
     # =========================================================================
     case key_str
-    when 'space', ' '
+    when 'space', ' ', 'enter', 'return', "\r", "\n"
       return true if defined?(@test_timer_paused) && @test_timer_paused == true
 
       if @test_mc_answered
@@ -116,7 +116,7 @@ module MultipleChoiceInputHandler
       end
       return true
 
-    when 'enter', "\r", "\n", 'e', 'f2'
+    when 'f2'
       was_already_paused = (@test_timer_paused == true)
       test_toggle_pause unless was_already_paused
 

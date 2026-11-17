@@ -84,7 +84,7 @@ module DrillInputHandler
       # =========================================================================
       # 📑 TOETS: SPATIEBALK (Reveal & Move Engine met x-Sec Timer Reset)
       # =========================================================================
-    when 'space', ' '
+    when 'space', ' ', 'enter', 'return', "\r", "\n"
       return true if defined?(@test_timer_paused) && @test_timer_paused == true
 
       if !@test_show_meaning
@@ -228,7 +228,7 @@ module DrillInputHandler
     # 📑 TOETSEN: ENTER / LIVE CARD UPDATES VIA POPUP (OBJECT IDENTITY FIX)
     # FIXED: Always retrieve the correct duplicate card by object_id.
     # =========================================================================
-    when 'enter', "\r", "\n", 'e', 'f2'
+    when 'f2'
       was_already_paused = (@test_timer_paused == true)
       test_toggle_pause unless was_already_paused
 
@@ -414,7 +414,7 @@ module DrillInputHandler
     visible_rows = [visible_rows.to_i, 1].max
     max_offset = [total_cards - visible_rows, 0].max
 
-  # Keep the current scroll offset within the table's strict bounds.
+    # Keep the current scroll offset within the table's strict bounds.
     offset = [[@test_drill_scroll_y.to_i, 0].max, max_offset].min
 
     if @test_current_idx < offset
