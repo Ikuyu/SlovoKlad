@@ -5,6 +5,16 @@ require 'shellwords'
 
 module SoundManager
   class << self
+    def speaking?
+      @speaking ||= false
+    end
+
+    def speaking=(value)
+      @speaking = value
+      # 🎯 Zodra het spreken klaar is, starten we direct de wachtrij als die er is!
+      process_queue unless value
+    end
+
     def active_sources
       @active_sources ||= {}
     end
@@ -22,34 +32,69 @@ module SoundManager
     def say(word, command:, voice: nil, lang: nil)
       raise ArgumentError, 'speech_not_configured' if command.to_s.empty?
 
+      # 🎯 Als we al aan het spreken zijn, slaan we dit woord op in de wachtrij.
+      # Druk je twee keer snel, dan wordt de 'pending' netjes overschreven naar het nieuwste woord.
+      if speaking?
+        @pending_speech = { word: word, command: command, voice: voice, lang: lang }
+        return
+      end
+
+      execute_say(word, command: command, voice: voice, lang: lang)
+    end
+
+    private
+
+    def execute_say(word, command:, voice: nil, lang: nil)
+      self.speaking = true
+
       normalized_word = normalize_word(word, lang: lang)
       template_args = Shellwords.split(command)
 
       if command.include?('say') || command.include?('espeak')
         unless template_args.include?('{text}') && template_args.include?('{voice}')
-          raise ArgumentError,
-                'speech_missing_placeholders'
+          self.speaking = false
+          raise ArgumentError, 'speech_missing_placeholders'
         end
-        raise ArgumentError, 'speech_not_configured' if voice.to_s.empty?
+        if voice.to_s.empty?
+          self.speaking = false
+          raise ArgumentError, 'speech_not_configured'
+        end
       else
-        raise ArgumentError, 'speech_missing_placeholders' unless template_args.include?('{text}')
+        unless template_args.include?('{text}')
+          self.speaking = false
+          raise ArgumentError, 'speech_missing_placeholders'
+        end
       end
 
-      # Vervang de placeholders in het ruwe commando
       final_command = command.dup
       final_command.gsub!('{text}', normalized_word)
       final_command.gsub!('{voice}', voice.to_s) if voice
       final_command.gsub!('{lang}', lang.to_s) if lang
 
-      # 🎯 De oplossing: Voer het hele complexe commando uit via 'bash -c'
-      # zodat pipes (|) en omleidingen (> /dev/null) correct door de shell worden verwerkt!
-      pid = spawn('bash', '-c', final_command)
-      Process.detach(pid)
+      Thread.new do
+        system('bash', '-c', final_command)
+      ensure
+        self.speaking = false
+      end
+
+      nil
     rescue Errno::ENOENT => e
+      self.speaking = false
       raise Errno::ENOENT, e.message
     rescue ArgumentError => e
+      self.speaking = false
       raise ArgumentError, e.message.include?('speech_') ? e.message : 'speech_command_invalid'
     end
+
+    def process_queue
+      return unless @pending_speech
+
+      args = @pending_speech
+      @pending_speech = nil
+      execute_say(args[:word], command: args[:command], voice: args[:voice], lang: args[:lang])
+    end
+
+    public
 
     def play(type)
       normalized_type = type.to_sym

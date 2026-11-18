@@ -31,7 +31,7 @@ module QuizInputHandler
     case key_str
     when '='
       current_test_card = @cards_to_test[@test_current_idx]
-      SpeechHandler.speak_term(current_test_card&.term) if current_test_card
+      speak_term(current_test_card&.term) if current_test_card
       return true
 
     # =========================================================================

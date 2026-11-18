@@ -90,7 +90,7 @@ module PlayMemoryInputHandler
         original_card = @cards_to_test.find { |c| c.object_id == target_card[:id] }
         term_text = original_card ? original_card.term.to_s : target_card[:content].to_s
 
-        SpeechHandler.speak_term(term_text)
+        speak_term(term_text)
       end
       return true
 

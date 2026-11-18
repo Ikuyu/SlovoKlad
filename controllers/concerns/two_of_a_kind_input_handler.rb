@@ -131,7 +131,7 @@ module TwoOfAKindInputHandler
         end
       end
 
-      SpeechHandler.speak_term(target_text) if target_text
+      speak_term(target_text) if target_text
       return true
     end
 
