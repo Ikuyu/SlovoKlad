@@ -12,6 +12,7 @@ config/settings.yml
 build.rbs
 /dist/
 slovoklad
+/models/ru_RU*.*
 
 # Editor- en besturingssysteembestanden
 .DS_Store

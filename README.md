@@ -175,9 +175,43 @@ bundle update
 bundle install
 ```
 
-# 5. KEYBOARD SHORTCUTS FOR INPUT FIELDS
+# 5. SPEECH CONFIGURATION (Text-to-Speech)
 
-## 5.1 Editing
+SlovoKlad can pronounce terms using text-to-speech (TTS). You can configure the speech command and voice using command-line flags.
+
+The application uses a flexible validation strategy for the --speech-command parameter:
+
+- For traditional commands like macOS say or Linux espeak, both {text} and {voice} placeholders are required.
+- For custom local engines (such as Piper), only {text} is required.
+
+## 5.1 Using Default System Speech Engines
+
+- macOS (say):
+```bash
+bundle exec ruby app.rb --speech-command 'say -v {voice} {text}' --speech-voice 'Milena' languages.json
+```
+- Linux (espeak):
+```bash
+bundle exec ruby app.rb --speech-command 'espeak -v {voice} "{text}"' --speech-voice 'ru' languages.json
+```
+
+## 5.2 Using Local Offline Engines (e.g. Piper)
+
+If you want to use a fast, local neural TTS engine like Piper without relying on system-wide voice flags, you can pipe the output directly into an audio player (like afplay on macOS):
+
+```bash
+# Example wrapper or launch command using a local Piper ONNX model
+bundle exec ruby app.rb \
+  --skip-startup \
+  --speech-command 'echo "{text}" | piper --model "./models/ru_RU-irina-medium.onnx" --output_file /tmp/piper_speech.wav && afplay /tmp/piper_speech.wav' \
+  --speech-voice 'irina' \
+  --speech-lang 'ru' \
+  languages.json
+  ```
+
+# 6. KEYBOARD SHORTCUTS FOR INPUT FIELDS
+
+## 6.1 Editing
 
 | Shortcut | Action |
 |---|---|
@@ -186,7 +220,7 @@ bundle install
 | `Control+Z` | Undo. |
 | `Control+T` | Swap the character behind the insertion point with the character in front of it. |
 
-## 5.2 Navigation
+## 6.2 Navigation
 
 | Shortcut | Action |
 |---|---|
@@ -200,7 +234,7 @@ bundle install
 | `Tab`, `Control+P` | Move to the next input field. |
 | `Backtab`, `Control+N` | Move to the previous input field. |
 
-## 5.3 Removing Text
+## 6.3 Removing Text
 
 | Shortcut | Action |
 |---|---|
@@ -211,7 +245,7 @@ bundle install
 | `Control+K` | Delete the text from the insertion point to the end of the line. |
 | `Control+U` | Delete the text from the insertion point to the beginning of the line. |
 
-## 5.4 Selecting Text
+## 6.4 Selecting Text
 
 | Shortcut | Action |
 |---|---|

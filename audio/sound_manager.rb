@@ -19,30 +19,31 @@ module SoundManager
       text.unicode_normalize(:nfc)
     end
 
-    def say(word, command:, voice:, lang: nil)
-      raise ArgumentError, 'speech_not_configured' if command.to_s.empty? || voice.to_s.empty?
+    def say(word, command:, voice: nil, lang: nil)
+      raise ArgumentError, 'speech_not_configured' if command.to_s.empty?
 
       normalized_word = normalize_word(word, lang: lang)
       template_args = Shellwords.split(command)
 
-      required_placeholders = %w[{text} {voice}]
-      missing_placeholders = required_placeholders.reject do |placeholder|
-        template_args.include?(placeholder)
-      end
-
-      raise ArgumentError, 'speech_missing_placeholders' unless missing_placeholders.empty?
-
-      args = template_args.flat_map do |arg|
-        case arg
-        when '{text}'  then [normalized_word]
-        when '{voice}' then [voice]
-        when '{lang}'  then lang ? [lang] : [] # Alleen meesturen als lang aanwezig is
-        else
-          [arg]
+      if command.include?('say') || command.include?('espeak')
+        unless template_args.include?('{text}') && template_args.include?('{voice}')
+          raise ArgumentError,
+                'speech_missing_placeholders'
         end
+        raise ArgumentError, 'speech_not_configured' if voice.to_s.empty?
+      else
+        raise ArgumentError, 'speech_missing_placeholders' unless template_args.include?('{text}')
       end
 
-      pid = spawn(*args)
+      # Vervang de placeholders in het ruwe commando
+      final_command = command.dup
+      final_command.gsub!('{text}', normalized_word)
+      final_command.gsub!('{voice}', voice.to_s) if voice
+      final_command.gsub!('{lang}', lang.to_s) if lang
+
+      # 🎯 De oplossing: Voer het hele complexe commando uit via 'bash -c'
+      # zodat pipes (|) en omleidingen (> /dev/null) correct door de shell worden verwerkt!
+      pid = spawn('bash', '-c', final_command)
       Process.detach(pid)
     rescue Errno::ENOENT => e
       raise Errno::ENOENT, e.message

@@ -296,6 +296,7 @@ module AppTranslations
         Option+Enter, A, +, F7          : Add item
         Enter, Shift+R, F2              : Rename item
         Backspace, -, F8                : Delete item(s)
+        =                               : Speak current term
         /, Control+F, F                 : Search
         \\, Control+H, Shift+F           : Search and replace
         N, Control+N, J, ↓              : Search next
@@ -365,7 +366,7 @@ module AppTranslations
         1 2 3 4                        : Answer (MC)
         Tab                            : Exclude card from future exercises (D, Q & MC) & show next card (Q & MC) | I don’t have that card (TK)
         F2                             : Edit card (D, Q, MC & PM) | Ask a card / Hand over a card (TK)
-
+        =                              : Speak current term
       TEXT
       help_input_fields: <<~TEXT
         === EDITING ===
@@ -703,6 +704,7 @@ module AppTranslations
         Option+Enter, A, +, F7          : Onderdeel toevoegen
         Enter, Shift+R, F2              : Onderdeel hernoemen
         Backspace, -, F8                : Onderde(e)l(en) verwijderen
+        =                               : Spreek huidige term uit
         /, Control+F, F                 : Zoeken
         \\, Control+H, Shift+F           : Zoeken en vervangen
         N, Control+N, J, ↓              : Zoek volgende
@@ -772,6 +774,7 @@ module AppTranslations
         1 2 3 4                        : Antwoord (MK)
         Tab                            : Kaart uitsluiten van toekomstige oefeningen (S, O & MK) & toon volgende kaart (O & MK) | Die kaart heb ik niet (TK)
         F2                             : Kaart bewerken (S, O, MK & SM) | Kaart vragen / kaart afstaan (TK)
+        =                              : Spreek huidige term uit
       TEXT
       help_input_fields: <<~TEXT
         === BEWERKEN ===

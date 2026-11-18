@@ -18,6 +18,22 @@ module CliHandler
     parser = build_option_parser(options)
     parse_cli_arguments!(parser)
 
+    # Flexibele controle: alleen verplicht voor say/espeak, elders is {text} voldoende
+    cmd = options[:speech_command].to_s
+    unless cmd.empty?
+      if cmd.include?('say') || cmd.include?('espeak')
+        unless cmd.include?('{text}') && cmd.include?('{voice}')
+          warn "\e[31mError:\e[0m Speech template for 'say' or 'espeak' must include both {text} and {voice}."
+          exit(1)
+        end
+      else
+        unless cmd.include?('{text}')
+          warn "\e[31mError:\e[0m Speech template must include at least {text}."
+          exit(1)
+        end
+      end
+    end
+
     if options[:speech_command].to_s.empty? != options[:speech_voice].to_s.empty?
       warn "\e[31mError:\e[0m --speech-command and --speech-voice must be used together."
       puts "Type '#{@app_name} --help' for usage."
@@ -125,7 +141,7 @@ module CliHandler
       end
 
       opts.on('--speech-command COMMAND',
-              'Speech command template using {text}, {voice}, and optionally {lang} (e.g. "say -v {voice} {text}")') do |command|
+              'Speech command template using {text} (and optionally {voice} for say/espeak)') do |command|
         options[:speech_command] = command
       end
 
