@@ -97,8 +97,7 @@ module TestInputHandler
   end
 
   # =========================================================================
-  # ⏱️ UNIVERSELE TIMER-TICK ENGINE (AUTOMATISCHE REVEAL IN DRILL)
-  # Gecorrigeerd: Dwingt een automatische reveal zodra de countdown 0 raakt!
+  # ⏱️ UNIVERSELE TIMER-TICK ENGINE
   # =========================================================================
   def handle_test_timer_tick
     # De poortwachters blijven intact om onnodige berekeningen te blokkeren
@@ -106,10 +105,23 @@ module TestInputHandler
     return if defined?(@test_finished_waiting) && @test_finished_waiting == true
     return if @cards_to_test.nil? || @cards_to_test.empty?
 
+    current_time = Process.clock_gettime(Process::CLOCK_MONOTONIC)
+
+    # Meerkeuze: ga 3 seconden na het beantwoorden automatisch verder.
+    if @current_study_mode == :multiple_choice &&
+       @test_mc_answered == true &&
+       @test_mc_answered_at
+      move_to_next_multiple_choice_card(mark_as_learned: false) if current_time - @test_mc_answered_at >= 1.0
+      return
+    end
+
+    # We voeren de berekening alleen uit als Drill, play memory of two of a kind actief is
+    return unless defined?(@current_study_mode) &&
+                  %i[drill memory two_of_a_kind].include?(@current_study_mode)
+
     # We voeren de berekening alleen nog uit als de Drill-modus actief is
     return unless defined?(@current_study_mode) && %i[drill memory two_of_a_kind].include?(@current_study_mode)
 
-    current_time = Process.clock_gettime(Process::CLOCK_MONOTONIC)
     @test_last_tick_time ||= current_time
 
     # Bereken exact hoeveel hele seconden er verstreken zijn

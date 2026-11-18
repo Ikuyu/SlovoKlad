@@ -18,6 +18,12 @@ module CliHandler
     parser = build_option_parser(options)
     parse_cli_arguments!(parser)
 
+    if options[:speech_command].to_s.empty? != options[:speech_voice].to_s.empty?
+      warn "\e[31mError:\e[0m --speech-command and --speech-voice must be used together."
+      puts "Type '#{@app_name} --help' for usage."
+      exit(1)
+    end
+
     target_file, options[:csv_files] = extract_target_file_and_csv_files(ARGV)
 
     # Determine whether a data action was requested and check for the required filename.
@@ -50,7 +56,10 @@ module CliHandler
       import_to_deck: nil,
       import_apkg: false,
       apkg_path: nil,
-      skip_startup: false
+      skip_startup: false,
+      speech_command: nil,
+      speech_voice: nil,
+      speech_lang: nil
     }
   end
 
@@ -113,6 +122,19 @@ module CliHandler
 
       opts.on('--skip-startup', 'Skip startup screen') do
         options[:skip_startup] = true
+      end
+
+      opts.on('--speech-command COMMAND',
+              'Speech command template using {text}, {voice}, and optionally {lang} (e.g. "say -v {voice} {text}")') do |command|
+        options[:speech_command] = command
+      end
+
+      opts.on('--speech-voice VOICE', 'Name of the voice to use') do |voice|
+        options[:speech_voice] = voice
+      end
+
+      opts.on('--speech-lang LANG', 'Speech language code (e.g. ru, en, nl)') do |lang|
+        options[:speech_lang] = lang
       end
 
       opts.on('-t', '--tree', 'Print the library tree with Source and Deck indices') do

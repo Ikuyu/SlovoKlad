@@ -14,6 +14,7 @@ class RatatuiRubyApp
   include TestInputHandler
   include FontStyleHelper
   include StatusbarInputHandler
+  include SpeechHandler
 
   def handle_undo_redo_shortcuts(key, has_ctrl, has_shift)
     return false unless key

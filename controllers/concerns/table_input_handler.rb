@@ -1,4 +1,5 @@
 require_relative '../../lib/ratin_checkbox'
+require_relative '../../audio/sound_manager'
 
 module TableInputHandler
   private
@@ -418,8 +419,13 @@ module TableInputHandler
                               context[:visible_height], context[:has_shift], context[:has_ctrl], focus_on_enter)
     when :space, 'space', ' ', "\u00A0", "\xC2\xA0", 'M', 'm'
       handle_table_space_input(key, context)
-    when 'a', 'e', 't', 'b', 'enter', "\r", "\n", '+', 'f2', 'f7'
-      handle_table_mutation(key, context[:modifiers], focus_on_enter, context[:selected_row])
+    when 'a', 'e', 't', 'b', 'enter', "\r", "\n", '+', 'f2', 'f7', '='
+      # Als het '+' of '=' is, handelen we dit af als spraak of mutatie
+      if key == '='
+        handle_table_speech(context)
+      else
+        handle_table_mutation(key, context[:modifiers], focus_on_enter, context[:selected_row])
+      end
     when 'n', 'N'
       handle_search_match_navigation(key)
     when 'backspace', "\x7f", '-', 'f8', :f8
@@ -427,6 +433,18 @@ module TableInputHandler
     else
       false
     end
+  end
+
+  def handle_table_speech(context)
+    cards_list = context[:cards_list]
+    row = context[:selected_row]
+    return false if cards_list.nil? || cards_list.empty? || row.nil?
+
+    card = cards_list[row]
+    return false unless card
+
+    speak_term(card.term)
+    true
   end
 
   def handle_table_space_input(key, context)

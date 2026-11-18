@@ -11,6 +11,7 @@ config/settings.yml
 /audio/unused/
 build.rbs
 /dist/
+slovoklad
 
 # Editor- en besturingssysteembestanden
 .DS_Store

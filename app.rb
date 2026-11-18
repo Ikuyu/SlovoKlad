@@ -482,7 +482,7 @@ class RatatuiRubyApp
   # This method is called on every iteration of the run_event_loop.
   # It keeps the rotation indicator counting down smoothly.
 
-  def handle_test_timer_tick
+  def handle_rotation_indicator_tick
     return unless defined?(@rotation_indicator_countdown) && @rotation_indicator_countdown.to_i > 0
 
     @animation_tick ||= 0
@@ -539,7 +539,8 @@ class RatatuiRubyApp
   def run_event_loop(tui)
     loop do
       handle_test_start_transition
-      handle_test_timer_tick if respond_to?(:handle_test_timer_tick)
+      handle_rotation_indicator_tick
+      handle_test_timer_tick
       handle_two_of_a_kind_pending_turn
 
       # 🎯 TRIGGER LIVE RE-RENDER TICK WHENEVER THE CURSOR TOGGLES STATE:

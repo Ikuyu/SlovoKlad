@@ -32,6 +32,10 @@ module DrillInputHandler
     @drill_viewport_start = @test_drill_scroll_y
 
     case key_str
+    when '='
+      current_test_card = @cards_to_test[@test_current_idx]
+      SpeechHandler.speak_term(current_test_card&.term) if current_test_card
+      return true
     # =========================================================================
     # 📑 TOETS 1: TAB (Overslaan / Markeren als gekend in de library)
     # Exact synchroon met de werking van quiz en multiple choice!

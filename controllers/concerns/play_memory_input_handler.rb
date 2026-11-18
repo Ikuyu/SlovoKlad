@@ -77,6 +77,23 @@ module PlayMemoryInputHandler
       (has_ctrl && key_str == 'd')
 
     case key_down
+
+    when '='
+      # Bepaal welke kaart actueel is
+      target_card = @memory_search_card ||
+                    (@memory_cards[@memory_second_flipped_idx] if @memory_second_flipped_idx) ||
+                    (@memory_cards[@memory_first_flipped_idx] if @memory_first_flipped_idx) ||
+                    @memory_cards.first
+
+      if target_card && target_card[:id] && defined?(@cards_to_test) && @cards_to_test
+        # Zoek de originele testkaart op via het ID, zodat we altijd de echte .term te pakken hebben!
+        original_card = @cards_to_test.find { |c| c.object_id == target_card[:id] }
+        term_text = original_card ? original_card.term.to_s : target_card[:content].to_s
+
+        SpeechHandler.speak_term(term_text)
+      end
+      return true
+
     when 'f4'
       SoundManager.play(:toggle)
       @test_show_context = !@test_show_context

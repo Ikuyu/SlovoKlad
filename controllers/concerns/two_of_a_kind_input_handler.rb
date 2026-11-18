@@ -117,6 +117,24 @@ module TwoOfAKindInputHandler
     raw_key_str = key.to_s.sub(/\A:/, '')
     key_str = raw_key_str.downcase
 
+    if key_str == '='
+      target_text = nil
+
+      if defined?(@two_of_a_kind_waiting_for_answer) && @two_of_a_kind_waiting_for_answer && @two_of_a_kind_computer_question
+        target_text = @two_of_a_kind_computer_question[:term].to_s
+      elsif defined?(@user_hand) && defined?(@user_card_index) && @user_hand[@user_card_index]
+        current_card = @user_hand[@user_card_index]
+        target_text = begin
+          current_card[:term].to_s
+        rescue StandardError
+          current_card.term.to_s
+        end
+      end
+
+      SpeechHandler.speak_term(target_text) if target_text
+      return true
+    end
+
     is_enter = ['space', ' ', 'enter', 'return', "\r", "\n"].include?(key_str)
 
     normalized_modifiers = modifiers.map(&:to_s).map(&:downcase)

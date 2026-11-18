@@ -36,12 +36,12 @@ module MultipleChoiceInputHandler
 
       @test_selected_option_idx = key_str.to_i - 1
       @test_mc_answered = true
-
+      @test_mc_answered_at = Process.clock_gettime(Process::CLOCK_MONOTONIC)
       chosen_text = @test_mc_options[@test_selected_option_idx]
 
       if chosen_text == @test_mc_correct_answer
         SoundManager.play(:right)
-      elsif respond_to?(:trigger_system_beep)
+      else
         SoundManager.play(:wrong)
       end
 
@@ -49,9 +49,15 @@ module MultipleChoiceInputHandler
     end
 
     # =========================================================================
-    # 📑 TOETS: TAB (Overslaan / Markeren als gekend via object_id)
+    # 📑 OVERIGE TOETSEN (Spatiebalk & Edit)
     # =========================================================================
-    if key_str == 'tab' || key == :tab
+    case key_str
+    when '='
+      current_test_card = @cards_to_test[@test_current_idx]
+      SpeechHandler.speak_term(current_test_card&.term) if current_test_card
+      return true
+
+    when 'tab', :tab
       current_test_card = @cards_to_test[@test_current_idx]
 
       if current_test_card
@@ -77,21 +83,17 @@ module MultipleChoiceInputHandler
         end
       end
 
-      move_to_next_multiple_choice_card(mark_as_learned: false)
+      move_to_next_multiple_choice_card(mark_as_learned: false, play_exclude_sound: true)
       return true
-    end
 
-    # =========================================================================
-    # 📑 OVERIGE TOETSEN (Spatiebalk & Edit)
-    # =========================================================================
-    case key_str
     when 'space', ' ', 'enter', 'return', "\r", "\n"
+
       return true if defined?(@test_timer_paused) && @test_timer_paused == true
 
       if @test_mc_answered
         # Space advances to the next card without marking it as learned.
-        move_to_next_multiple_choice_card(mark_as_learned: false)
-      elsif respond_to?(:trigger_system_beep)
+        move_to_next_multiple_choice_card(mark_as_learned: false, play_exclude_sound: false)
+      else
         trigger_system_beep
       end
 
@@ -210,7 +212,7 @@ module MultipleChoiceInputHandler
     @test_selected_option_idx = nil
   end
 
-  def move_to_next_multiple_choice_card(mark_as_learned: false)
+  def move_to_next_multiple_choice_card(mark_as_learned: false, play_exclude_sound: false)
     current_test_card = @cards_to_test[@test_current_idx]
 
     if mark_as_learned && current_test_card
@@ -241,9 +243,8 @@ module MultipleChoiceInputHandler
       return
     end
 
-    # 🎯 DE FIX: Als er nog kaarten over zijn, spelen we nu pas veilig het exclude-geluid af.
-    # Dit voorkomt dat :exclude en :finished tegelijkertijd of na elkaar afspelen.
-    SoundManager.play(:exclude) unless mark_as_learned
+    # Play exclude als er op tab werd gedrukt
+    SoundManager.play(:exclude) if play_exclude_sound && !mark_as_learned
 
     # Correct the cursor and reset the interface for the next card.
     @test_current_idx = @cards_to_test.length - 1 if @test_current_idx >= @cards_to_test.length

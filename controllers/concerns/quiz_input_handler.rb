@@ -26,9 +26,18 @@ module QuizInputHandler
     @test_current_idx = [[@test_current_idx, 0].max, @cards_to_test.length - 1].min
 
     # =========================================================================
+    # 📑 OVERIGE TOETSEN (Space & Edit via Enter)
+    # =========================================================================
+    case key_str
+    when '='
+      current_test_card = @cards_to_test[@test_current_idx]
+      SpeechHandler.speak_term(current_test_card&.term) if current_test_card
+      return true
+
+    # =========================================================================
     # 📑 TOETS: TAB (Overslaan / Markeren als gekend via object_id)
     # =========================================================================
-    if key_str == 'tab' || key == :tab
+    when 'tab', :tab
       current_test_card = @cards_to_test[@test_current_idx]
 
       if current_test_card
@@ -53,12 +62,7 @@ module QuizInputHandler
 
       remove_current_quiz_card
       return true
-    end
 
-    # =========================================================================
-    # 📑 OVERIGE TOETSEN (Space & Edit via Enter)
-    # =========================================================================
-    case key_str
     when 'space', ' ', 'enter', 'return', "\r", "\n"
       return true if defined?(@test_timer_paused) && @test_timer_paused == true
 
