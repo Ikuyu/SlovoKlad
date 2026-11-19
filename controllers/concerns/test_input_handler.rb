@@ -100,89 +100,116 @@ module TestInputHandler
   # ⏱️ UNIVERSELE TIMER-TICK ENGINE
   # =========================================================================
   def handle_test_timer_tick
-    # De poortwachters blijven intact om onnodige berekeningen te blokkeren
-    return if defined?(@test_timer_paused) && @test_timer_paused == true
-    return if defined?(@test_finished_waiting) && @test_finished_waiting == true
     return if @cards_to_test.nil? || @cards_to_test.empty?
+    return if @test_finished_waiting == true
 
     current_time = Process.clock_gettime(Process::CLOCK_MONOTONIC)
 
-    # Quiz: ga 1 seconde na het tonen van het antwoord automatisch naar de volgende kaart.
-    if @current_study_mode == :quiz &&
-       @test_show_meaning == true &&
-       @quiz_meaning_shown_at &&
-       (current_time - @quiz_meaning_shown_at) >= 1.0
+    # Bij pauze of een geopend popupvenster loopt de tijd niet door.
+    popup_is_open = defined?(@popup) && @popup &&
+                    @popup.respond_to?(:active?) && @popup.active?
 
-      @quiz_meaning_shown_at = nil
-      remove_current_quiz_card(exclude: false)
+    if @test_timer_paused == true || popup_is_open
+      @test_last_tick_time = current_time
       return
     end
-
-    # Meerkeuze: ga 3 seconden na het beantwoorden automatisch verder.
-    if @current_study_mode == :multiple_choice &&
-       @test_mc_answered == true &&
-       @test_mc_answered_at
-      move_to_next_multiple_choice_card(mark_as_learned: false) if current_time - @test_mc_answered_at >= 1.0
-      return
-    end
-
-    # We voeren de berekening alleen uit als Drill, play memory of two of a kind actief is
-    return unless defined?(@current_study_mode) &&
-                  %i[drill memory two_of_a_kind].include?(@current_study_mode)
-
-    # We voeren de berekening alleen nog uit als de Drill-modus actief is
-    return unless defined?(@current_study_mode) && %i[drill memory two_of_a_kind].include?(@current_study_mode)
 
     @test_last_tick_time ||= current_time
+    elapsed_delta = current_time - @test_last_tick_time
+    @test_last_tick_time = current_time
 
-    # Bereken exact hoeveel hele seconden er verstreken zijn
-    elapsed_seconds = (current_time - @test_last_tick_time).to_i
-    return unless elapsed_seconds >= 1
+    return unless elapsed_delta.positive?
 
-    @test_time_left ||= 0
+    if @drill_timer_zero_pending == true
+      if current_time - (@drill_timer_zero_at || current_time) >= 1.0
+        @drill_timer_zero_pending = false
 
-    if @current_study_mode == :drill &&
-       defined?(@test_drill_timed) &&
-       @test_drill_timed == true
+        # Antwoord was één seconde zichtbaar.
+        # Ga naar de volgende kaart en verberg het antwoord.
+        move_drill_cursor(1, @cards_to_test.length)
+        @test_show_meaning = false
 
-      @test_time_left -= elapsed_seconds
-
-      if @test_time_left <= 0
-        @test_time_left = 0
-
-        if @drill_timer_zero_pending
-          # NUL IS GETOOND: VOER DE OVERGANG UIT
-          @drill_timer_zero_pending = false
-
-          if !@test_show_meaning
-            # FASE 1: Toon het antwoord
-            @test_show_meaning = true
-            SoundManager.play(:select)
-          else
-            # FASE 2: Ga naar de volgende kaart
-            @test_show_meaning = false
-            move_drill_cursor(1, @cards_to_test.length)
-          end
-
-          # Start de volgende timerfase
-          @test_time_left = @test_drill_timer_max.to_i
-          @test_last_tick_time = current_time
-        else
-          # NUL EERST LATEN ZIEN IN DE STATUSBAR
-          @drill_timer_zero_pending = true
-          @test_last_tick_time = current_time
-
-        end
+        # Nieuwe countdown starten.
+        @test_time_left = @test_drill_timer_max.to_i
+        @test_last_tick_time = current_time
 
         @table_changed = true
       end
 
-    else
-      # Drill, Memory en Two of a Kind tellen lineair omhoog
-      @test_time_left += elapsed_seconds
+      return
     end
 
-    # Zet het anker vast voor de volgende stap
-    @test_last_tick_time = current_time
+    case @current_study_mode
+
+    when :drill, :memory, :two_of_a_kind
+      @test_drill_elapsed ||= 0.0
+      @test_drill_elapsed += elapsed_delta
+
+      if @current_study_mode == :drill &&
+         @test_drill_timed == true
+
+        @test_time_left = @test_time_left.to_f - elapsed_delta
+
+        if @test_time_left <= 0
+          @test_time_left = 0
+
+          # Bij nul het antwoord tonen.
+          @test_show_meaning = true
+          SoundManager.play(:select)
+
+          # Eén seconde wachten voordat de volgende kaart komt.
+          @drill_timer_zero_pending = true
+          @drill_timer_zero_at = current_time
+
+          @table_changed = true
+          nil
+        end
+      end
+
+    when :quiz, :multiple_choice
+      # Quiz en Multiple Choice tellen af.
+      unless @test_time_left.nil?
+        @test_time_left = [@test_time_left.to_f - elapsed_delta, 0].max
+
+        if @test_time_left <= 0 && !@test_time_was_up_notified
+          if respond_to?(:trigger_statusbar_message)
+            trigger_statusbar_message(
+              "#{AppConfig.settings.language_string(:study_test_failed)}: " \
+              "#{AppConfig.settings.language_string(:study_test_time_up)}!",
+              type: :error,
+              beep: false,
+              expires: false
+            )
+          end
+
+          SoundManager.play(:failed)
+          @test_time_was_up_notified = true
+          @test_finished_waiting = true
+          @table_changed = true
+          return
+        end
+      end
+
+      # Quiz: na het tonen van het antwoord na één seconde verdergaan.
+      if @current_study_mode == :quiz &&
+         @test_show_meaning == true &&
+         @quiz_meaning_shown_at &&
+         (current_time - @quiz_meaning_shown_at) >= 1.0
+
+        @quiz_meaning_shown_at = nil
+        remove_current_quiz_card(exclude: false)
+        return
+      end
+
+      # Multiple Choice: na beantwoorden na één seconde verdergaan.
+      if @current_study_mode == :multiple_choice &&
+         @test_mc_answered == true &&
+         @test_mc_answered_at &&
+         (current_time - @test_mc_answered_at) >= 1.0
+
+        move_to_next_multiple_choice_card(mark_as_learned: false)
+        nil
+      end
+    end
   end
 end

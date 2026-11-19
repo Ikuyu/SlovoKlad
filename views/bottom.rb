@@ -511,65 +511,32 @@ def draw_bottom_region(tui, frame, region)
   # We bakken de 1-spatie marge direct aan het einde van de string in,
   # maar we tellen hem hieronder wiskundig mee in de totale breedte!
   # =========================================================================
+
   right_spans = if is_test_starting
                   []
                 elsif is_test_active && defined?(@test_time_left)
-                  popup_is_open = defined?(@popup) && @popup && @popup.respond_to?(:active?) && @popup.active?
-                  @test_last_tick_time ||= Process.clock_gettime(Process::CLOCK_MONOTONIC)
-
-                  if !popup_is_open && !(defined?(@test_timer_paused) && @test_timer_paused == true) && !(defined?(@test_finished_waiting) && @test_finished_waiting == true)
-                    current_monotonic_time = Process.clock_gettime(Process::CLOCK_MONOTONIC)
-                    elapsed_delta = current_monotonic_time - @test_last_tick_time
-
-                    if %i[memory drill two_of_a_kind].include?(@current_study_mode)
-                      # MEMORY, DRILL EN TWO OF A KIND:
-                      # Oplopende sessietijd
-                      @test_drill_elapsed ||= 0.0
-                      @test_drill_elapsed += elapsed_delta
-
-                      # Optionele countdown uitsluitend voor Drill
-                      if @current_study_mode == :drill && @test_drill_timed == true
-                        @test_time_left -= elapsed_delta
-
-                        if @test_time_left <= 0
-                          @test_time_left = 0
-                          handle_drill_input(' ', []) if respond_to?(:handle_drill_input)
-                        end
-                      end
+                  # De view toont alleen de tijd; timerberekeningen gebeuren
+                  # centraal in handle_test_timer_tick.
+                  active_seconds_value =
+                    if @current_study_mode == :drill &&
+                       @test_drill_timed == true
+                      # Toon de aftellende timer in beide fasen.
+                      @test_time_left || 0
+                    elsif %i[drill memory two_of_a_kind].include?(@current_study_mode)
+                      # Oplopende sessiestopwatch.
+                      @test_drill_elapsed || 0
                     else
-                      # Quiz en Multiple Choice tellen regulier af van de totale tijd
-                      # (Two of a Kind en Drill zijn hier nu volledig van uitgesloten)
-                      if %i[quiz multiple_choice].include?(@current_study_mode)
-                        @test_time_left -= elapsed_delta
-
-                        if (@test_time_left <= 0) && respond_to?(:trigger_statusbar_message)
-                          trigger_statusbar_message(
-                            "#{AppConfig.settings.language_string(:study_test_failed)}: #{AppConfig.settings.language_string(:study_test_time_up)}!",
-                            type: :error,
-                            beep: false,
-                            expires: false
-                          )
-                          @test_time_left = 0
-                          SoundManager.play(:failed)
-                          @test_time_was_up_notified = true
-                          @test_finished_waiting = true
-                        end
-                      end
+                      @test_time_left || 0
                     end
-                  end
 
-                  @test_last_tick_time = Process.clock_gettime(Process::CLOCK_MONOTONIC)
+                  total_seconds = if @current_study_mode == :drill && @test_drill_timed == true
+                                    [active_seconds_value.to_f.ceil, 0].max
+                                  else
+                                    [active_seconds_value.to_i, 0].max
+                                  end
 
-                  # In drill/memory mode, the stopwatch on the right always shows elapsed session time.
-                  active_seconds_value = if %i[drill
-                                               memory two_of_a_kind].include?(@current_study_mode)
-                                           @test_drill_elapsed || 0
-                                         else
-                                           @test_time_left
-                                         end
-
-                  mins_num = [active_seconds_value.to_i / 60, 0].max
-                  secs_num = [active_seconds_value.to_i % 60, 0].max
+                  mins_num = total_seconds / 60
+                  secs_num = total_seconds % 60
 
                   time_string = format('%02d:%02d', mins_num, secs_num)
                   [span(time_string, context[:default_style])]

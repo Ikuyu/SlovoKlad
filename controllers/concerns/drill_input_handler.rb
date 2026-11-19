@@ -93,6 +93,10 @@ module DrillInputHandler
 
       if !@test_show_meaning
         @test_show_meaning = true
+
+        # Start de countdown pas wanneer het antwoord zichtbaar wordt.
+        restart_drill_timer if @test_drill_timed == true
+
         SoundManager.play(:select)
       else
         # Continue to the next row.
@@ -298,6 +302,14 @@ module DrillInputHandler
 
       if @test_drill_timed
         @test_timer_paused = false
+
+        if @test_show_meaning == true
+          # Antwoord was zichtbaar: ga naar de volgende kaart.
+          @test_show_meaning = false
+          move_drill_cursor(1, @cards_to_test.length)
+        end
+
+        # Start de timer voor de huidige (nieuwe) kaart.
         restart_drill_timer
       else
         @test_time_left = 0
@@ -368,10 +380,6 @@ module DrillInputHandler
     visible_rows, = drill_page_metrics
     total_cards = @cards_to_test.length
     keep_drill_scroll_synchronized(visible_rows, total_cards)
-
-    return unless defined?(@test_drill_timed) && @test_drill_timed == true
-
-    restart_drill_timer
   end
 
   # Begrenst een waarde tot de opgegeven minimum- en maximumgrens.
