@@ -107,6 +107,17 @@ module TestInputHandler
 
     current_time = Process.clock_gettime(Process::CLOCK_MONOTONIC)
 
+    # Quiz: ga 1 seconde na het tonen van het antwoord automatisch naar de volgende kaart.
+    if @current_study_mode == :quiz &&
+       @test_show_meaning == true &&
+       @quiz_meaning_shown_at &&
+       (current_time - @quiz_meaning_shown_at) >= 1.0
+
+      @quiz_meaning_shown_at = nil
+      remove_current_quiz_card(exclude: false)
+      return
+    end
+
     # Meerkeuze: ga 3 seconden na het beantwoorden automatisch verder.
     if @current_study_mode == :multiple_choice &&
        @test_mc_answered == true &&
@@ -130,20 +141,44 @@ module TestInputHandler
 
     @test_time_left ||= 0
 
-    if @current_study_mode == :drill && defined?(@test_drill_timed) && @test_drill_timed == true
-      # TIMED DRILL STAND: Wekker telt af tot 0 voor automatische reveal
-      unless @test_show_meaning
-        @test_time_left -= elapsed_seconds
+    if @current_study_mode == :drill &&
+       defined?(@test_drill_timed) &&
+       @test_drill_timed == true
 
-        if @test_time_left <= 0
-          @test_time_left = 0
-          @test_show_meaning = true
+      @test_time_left -= elapsed_seconds
 
-          @table_changed = true if instance_variable_defined?(:@table_changed)
+      if @test_time_left <= 0
+        @test_time_left = 0
+
+        if @drill_timer_zero_pending
+          # NUL IS GETOOND: VOER DE OVERGANG UIT
+          @drill_timer_zero_pending = false
+
+          if !@test_show_meaning
+            # FASE 1: Toon het antwoord
+            @test_show_meaning = true
+            SoundManager.play(:select)
+          else
+            # FASE 2: Ga naar de volgende kaart
+            @test_show_meaning = false
+            move_drill_cursor(1, @cards_to_test.length)
+          end
+
+          # Start de volgende timerfase
+          @test_time_left = @test_drill_timer_max.to_i
+          @test_last_tick_time = current_time
+        else
+          # NUL EERST LATEN ZIEN IN DE STATUSBAR
+          @drill_timer_zero_pending = true
+          @test_last_tick_time = current_time
+
         end
+
+        @table_changed = true
       end
+
     else
-      # Drill, Memory én Two of a Kind tellen lineair omhoog
+      # Drill, Memory en Two of a Kind tellen lineair omhoog
       @test_time_left += elapsed_seconds
     end
 

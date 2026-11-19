@@ -114,6 +114,7 @@ module SoundManager
         when :switch then 'switch.mp3'
         when :chime then 'chime.mp3'
         when :draw_card then 'draw_card.mp3'
+        when :next then 'next.mp3'
         end
 
       return unless filename

@@ -93,6 +93,7 @@ module DrillInputHandler
 
       if !@test_show_meaning
         @test_show_meaning = true
+        SoundManager.play(:select)
       else
         # Continue to the next row.
         @test_show_meaning = false
@@ -293,7 +294,6 @@ module DrillInputHandler
     when 't'
       return true if defined?(@test_timer_paused) && @test_timer_paused == true
 
-      # Toggle the flag (true becomes false, and false becomes true).
       @test_drill_timed = !(@test_drill_timed || false)
 
       if @test_drill_timed
@@ -301,7 +301,6 @@ module DrillInputHandler
         restart_drill_timer
       else
         @test_time_left = 0
-        # Ook bij uitschakelen het frame-anker vernieuwen.
         @test_last_tick_time = Process.clock_gettime(Process::CLOCK_MONOTONIC)
       end
 
@@ -334,7 +333,7 @@ module DrillInputHandler
 
       # Live update: Alleen als de timer op dit moment ACTIEF loopt én het antwoord
       # has not been shown yet, update the running timer immediately.
-      restart_drill_timer if defined?(@test_drill_timed) && @test_drill_timed == true && !@test_show_meaning
+      restart_drill_timer if defined?(@test_drill_timed) && @test_drill_timed == true
 
       return true
 

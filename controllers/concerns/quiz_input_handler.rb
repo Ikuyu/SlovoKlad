@@ -60,17 +60,16 @@ module QuizInputHandler
         end
       end
 
-      remove_current_quiz_card
+      remove_current_quiz_card(exclude: true)
       return true
 
     when 'space', ' ', 'enter', 'return', "\r", "\n"
       return true if defined?(@test_timer_paused) && @test_timer_paused == true
 
-      if !@test_show_meaning
+      unless @test_show_meaning
         @test_show_meaning = true
-      elsif remove_current_quiz_card
-        # Advance to the next card without marking it as learned.
-        return true
+        SoundManager.play(:select)
+        @quiz_meaning_shown_at = Process.clock_gettime(Process::CLOCK_MONOTONIC)
       end
 
       return true
@@ -159,7 +158,9 @@ module QuizInputHandler
 
   # Remove the current quiz card and update progress.
   # Geeft true terug als de quiz hierdoor eindigt.
-  def remove_current_quiz_card
+  # Remove the current quiz card and update progress.
+  # Geeft true terug als de quiz hierdoor eindigt.
+  def remove_current_quiz_card(exclude: false)
     @test_last_deleted_card = @cards_to_test[@test_current_idx]
     @cards_to_test.delete_at(@test_current_idx)
     @test_card_directions.delete_at(@test_current_idx) if defined?(@test_card_directions) && @test_card_directions
@@ -172,7 +173,8 @@ module QuizInputHandler
       return true
     end
 
-    SoundManager.play(:exclude)
+    # Speel het juiste geluid af op basis van het exclude-argument
+    SoundManager.play(exclude ? :exclude : :next)
 
     @test_current_idx = @cards_to_test.length - 1 if @test_current_idx >= @cards_to_test.length
     @test_show_meaning = false
