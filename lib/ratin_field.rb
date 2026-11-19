@@ -1998,7 +1998,7 @@ class RatinField
       cursor_style =
         if @is_focused && cursor_is_currently_visible
           {
-            fg: inactive_color,
+            fg: cursor_fg,
             bg: cursor_bg,
             modifiers: [:dim]
           }
