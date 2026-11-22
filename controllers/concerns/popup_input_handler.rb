@@ -455,7 +455,7 @@ module PopupInputHandler
       nil
     end
 
-    is_menu_popup = %i[help info].include?(popup_type)
+    is_menu_popup = %i[help info study_session_help].include?(popup_type)
 
     # =========================================================================
     # FIX 1: CONTEXT-AWARE ESCAPE & ANNULEER BRANDMUUR (HERSTELT FOCUS LOEPZUIVER)
@@ -474,8 +474,10 @@ module PopupInputHandler
         @statusbar_field.is_focused = true if defined?(@statusbar_field) && @statusbar_field
 
         @focus_before_help = nil if defined?(@focus_before_help)
-
-      elsif is_menu_popup # 🟢 BIJ ESCAPE: De popup sluit, maar de focus blijft rotsvast op :menu
+      elsif popup_type == :study_session_help
+        @active_focus = :study_focus_mode
+        @last_focus = :study_focus_mode
+      elsif is_menu_popup
         @active_focus = :menu
         @last_focus = :menu
         @menu_dropdown_open = true if defined?(@menu_dropdown_open)
@@ -537,7 +539,7 @@ module PopupInputHandler
 
   def process_help_keys(key, modifiers = [])
     popup = @popup&.active_popup
-    return false unless popup && popup[:type] == :help
+    return false unless popup && %i[help study_session_help].include?(popup[:type])
 
     mods = normalize_popup_modifiers(modifiers)
     raw_string = key.to_s
@@ -545,7 +547,8 @@ module PopupInputHandler
     key_raw = is_space ? 'space' : raw_string.strip.sub(/\A:/, '')
     key_down = key_raw.downcase
 
-    return true if switch_help_tab(popup, key_down)
+    # The study help menu is deliberately a single, fixed help page.
+    return true if popup[:type] == :help && switch_help_tab(popup, key_down)
 
     scroll_state = help_scroll_state(popup)
     handle_help_scroll_key(popup, key_raw, key_down, mods, scroll_state)
@@ -659,7 +662,7 @@ module PopupInputHandler
   end
 
   def help_popup_height(popup, needed_box_height, max_terminal_box_height)
-    if popup[:type] == :help
+    if %i[help study_session_help].include?(popup[:type])
       calculated = needed_box_height <= max_terminal_box_height ? needed_box_height : max_terminal_box_height
       [calculated, 7].max
     else

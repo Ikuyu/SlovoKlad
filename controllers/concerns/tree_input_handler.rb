@@ -1393,7 +1393,7 @@ module TreeInputHandler
       end
 
       # Universele basistoetsen die ALTIJD geldig zijn ongeacht de taal
-      is_universal_rename_key = ['R', 'f2', 'enter', "\r", "\n"].include?(key_str)
+      is_universal_rename_key = %w[R f2].include?(key_str)
 
       is_allowed = if lang == :nl
                      is_universal_rename_key

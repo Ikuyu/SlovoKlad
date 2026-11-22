@@ -175,10 +175,14 @@ class RatatuiRubyApp
 
   # Restore the timer state saved before the help popup was opened.
   def restore_study_timer_after_help
-    return unless defined?(@test_timer_paused) && defined?(@test_timer_paused_before_help)
+    return unless instance_variable_defined?(:@test_timer_paused_before_help)
 
-    @test_timer_paused = @test_timer_paused_before_help
-    @test_last_tick_time = Process.clock_gettime(Process::CLOCK_MONOTONIC) if @test_timer_paused == false
+    was_paused = @test_timer_paused_before_help == true
+
+    @test_timer_paused = was_paused
+    @test_last_tick_time = Process.clock_gettime(Process::CLOCK_MONOTONIC)
+
+    @test_timer_paused_before_help = nil
   end
 
   # Sluit of annuleert de popup en herstelt focus, timerstatus en navigatiestatus.
@@ -189,11 +193,11 @@ class RatatuiRubyApp
     handle_popup_input(key, modifiers)
 
     if defined?(@focus_before_help) && @focus_before_help == :study_focus_mode
+      restore_study_timer_after_help
+
       @active_focus = :study_focus_mode
       @last_focus   = :study_focus_mode
       @focus_before_help = nil
-
-      restore_study_timer_after_help
     elsif (defined?(@last_focus) && @last_focus == :command_mode) ||
           (defined?(@focus_before_help) && @focus_before_help == :command_mode)
 
@@ -260,9 +264,22 @@ class RatatuiRubyApp
     popup_title = begin; active_pop[:title].to_s.downcase; rescue StandardError; ''; end
     form_fields = active_pop[:fields] || {}
 
-    # 🎯 INFO/HELP CORE RETOUR-SLUIS:
-    if %i[info help].include?(active_pop[:type])
-      # 1. Sloop de popup fysiek en randschoon uit het schermregister
+    # Dedicated study help: close and return directly to the study session.
+    if active_pop[:type] == :study_session_help
+      restore_study_timer_after_help
+
+      @popup.close if @popup.respond_to?(:close)
+
+      @active_focus = :study_focus_mode
+      @last_focus = :study_focus_mode
+      @focus_before_help = nil
+
+      @tree.refresh_nodes if @tree.respond_to?(:refresh_nodes)
+      return true
+    end
+
+    # Existing info/general-help return route.
+    if %i[info help].include?(active_pop[:type]) # 1. Sloop de popup fysiek en randschoon uit het schermregister
       handle_popup_input(key, modifiers)
 
       # 2. Bepaal het absolute startpaneel van vóór het complete menu-bezoek
@@ -884,6 +901,20 @@ def handle_focus_specific_input(key, modifiers, key_raw_check, settings)
                @library.subjects[s_idx].sources[src_idx].decks[d_idx]
 
     if has_deck
+      # DEBUG: toetsinvoer vóór overdracht aan TableInputHandler
+      begin
+        File.open('slovoklad_shift_enter.log', 'a') do |f|
+          f.puts(
+            "[INPUT_CONTROLLER #{Time.now}] " \
+            "key=#{key.inspect} " \
+            "focus_on_enter=#{focus_on_enter.inspect} " \
+            "modifiers=#{modifiers.inspect} " \
+            "active_focus=#{@active_focus.inspect}"
+          )
+        end
+      rescue StandardError => e
+        warn "Input controller debug error: #{e.message}"
+      end
       table_action_consumed = handle_table_input(key, focus_on_enter, modifiers)
       return true if table_action_consumed
     end
@@ -943,16 +974,23 @@ def handle_table_divider_shortcut(key_raw_check, popup_is_active)
   true
 end
 
-# Handle opening the help popup and save the focus to restore afterward.
+# Handle the help shortcut, with a dedicated help menu during study sessions.
+
 def handle_global_help_shortcut(key, modifiers, key_raw_check, has_ctrl_check, has_alt_check, popup_is_active)
   return nil unless key_raw_check == '?' && !has_ctrl_check && !has_alt_check
 
-  # 🎯 STAP 2: DE DOELGERICHTE LEERSESSIE BRANDMUUR:
-  # If '?' is pressed while studying, consume only this '?' key.
-  # Alle andere toetsen (zoals 1 t/m 3 voor moeilijkheid) lopen hierdoor nu weer vloeibaar door.
-  return true if @active_focus == :study_focus_mode || (defined?(@current_study_mode) && @current_study_mode)
+  study_modes = %i[drill quiz multiple_choice memory two_of_a_kind]
 
-  return nil unless key_raw_check == '?' && !has_ctrl_check && !has_alt_check && !popup_is_active
+  if study_modes.include?(@current_study_mode)
+    return true if popup_is_active
+
+    open_study_session_help_popup
+    return true
+  end
+
+  # Preserve the existing study-focus protection.
+  return true if @active_focus == :study_focus_mode
+  return true if popup_is_active
 
   captured_origin = defined?(@menu_origin_focus) && @menu_origin_focus ? @menu_origin_focus : nil
   captured_origin ||= defined?(@active_focus) && @active_focus != :command_mode ? @active_focus : :tree
@@ -960,48 +998,26 @@ def handle_global_help_shortcut(key, modifiers, key_raw_check, has_ctrl_check, h
 
   exit_global_search_mode
 
-  # =========================================================================
-  # 📑 REGULIERE POPUP- EN HELP-SHORTCUTS
-  # =========================================================================
-  return unless key_raw_check == '?' && !has_ctrl_check && !has_alt_check && !popup_is_active
+  return unless respond_to?(:open_help_popup, true)
 
-  if popup_is_active
-    handle_popup_input(key, modifiers) if respond_to?(:handle_popup_input)
-    if defined?(@focus_before_help) && @focus_before_help == :study_focus_mode
-      @active_focus = :study_focus_mode
-      @last_focus   = :study_focus_mode
-      @focus_before_help = nil
-    end
-    if @active_focus == :study_focus_mode && defined?(@test_timer_paused) && defined?(@test_timer_paused_before_help)
-      @test_timer_paused = @test_timer_paused_before_help
-      @test_last_tick_time = Process.clock_gettime(Process::CLOCK_MONOTONIC) if @test_timer_paused == false
-    end
-  elsif respond_to?(:open_help_popup, true)
-    # 🎯 DE MENU-HERKOMST CHECK:
-    if defined?(@active_focus) && @active_focus == :menu
-      # Opened from the menu: select Help (column 1) > Help (item 0).
-      @active_menu_idx    = 1
-      @active_submenu_idx = 0
-      @menu_dropdown_open = true
-      @focus_before_help  = :menu
-      @menu_origin_focus  ||= :menu # het help-scherm wordt immers geopend vanuit het menu
-    else
-      @test_timer_paused_before_help = @test_timer_paused if defined?(@test_timer_paused)
-      test_toggle_pause if defined?(@test_timer_paused) && @test_timer_paused == false
-      @focus_before_help = :command_mode
-      @menu_origin_focus = captured_origin
-    end
-
-    # Vuur de legitieme help-popup procedure af
-    open_help_popup
-
-    # Schakel de TUI-focus direct om naar de popup-overlay
-    @last_focus   = :popup
-    @active_focus = :popup
+  if @active_focus == :menu
+    @active_menu_idx    = 1
+    @active_submenu_idx = 0
+    @menu_dropdown_open = true
+    @focus_before_help  = :menu
+    @menu_origin_focus  ||= :menu
+  else
+    @focus_before_help = :command_mode
+    @menu_origin_focus = captured_origin
   end
 
+  open_help_popup
+
+  @last_focus   = :popup
+  @active_focus = :popup
+
   @tree.refresh_nodes if @tree.respond_to?(:refresh_nodes)
-  true # Slik de toets onvoorwaardelijk in; 0% lekkage!
+  true
 end
 
 # Start de gekozen studiemodus en controleert of er een geldig deck met kaarten is.
@@ -1421,8 +1437,13 @@ def handle_study_session_exit(key, modifiers, is_escape_action)
 
   # Scenario B: Escape breekt een nog actieve leersessie af.
   if is_escape_action
-    # Let an active popup handle Escape first.
-    return true if @popup&.active_popup && handle_popup_input(key, modifiers)
+    # Laat het studie-helpmenu door naar de normale popup-afhandeling.
+    active_popup = @popup&.active_popup
+
+    return nil if active_popup && active_popup[:type] == :study_session_help
+
+    # Andere actieve popups blijven hun bestaande Escape-afhandeling gebruiken.
+    return true if active_popup && handle_popup_input(key, modifiers)
 
     # Startgeluid onmiddellijk stoppen.
     SoundManager.stop(:start)

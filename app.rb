@@ -434,9 +434,12 @@ class RatatuiRubyApp
       print "\e[?25l"
       $stdout.flush
 
-      enable_keyboard_and_mouse_capture
+      enable_mouse_capture
 
       RatatuiRuby.run do |tui|
+        # Kitty keyboard protocol inschakelen op het alternate scherm.
+        enable_kitty_keyboard_protocol
+
         print "\e[8l" # app handles bidi, not the terminal.
         $stdout.flush
 
@@ -471,8 +474,12 @@ class RatatuiRubyApp
         # tty.puts message
 
         run_event_loop(tui)
+      ensure
+        # Kitty keyboard protocol herstellen vóór het verlaten van het alternate scherm.
+        disable_kitty_keyboard_protocol
+
+        # puts message
       end
-      # puts message
     ensure
       restore_terminal_state
     end
@@ -525,10 +532,29 @@ class RatatuiRubyApp
     spin_chars[tick % spin_chars.length]
   end
 
-  def enable_keyboard_and_mouse_capture
-    @kitty_keyboard_enabled = true
+  def enable_kitty_keyboard_protocol
+    return if @kitty_keyboard_enabled
+
     $stdout.write("\e[>1u")
     $stdout.flush
+    @kitty_keyboard_enabled = true
+  end
+
+  def disable_kitty_keyboard_protocol
+    return unless @kitty_keyboard_enabled
+
+    $stdout.write("\e[<u")
+    $stdout.flush
+    @kitty_keyboard_enabled = false
+  end
+
+  def enable_mouse_capture
+    supported = RatatuiRuby::Terminal.supports_keyboard_enhancement?
+
+    File.open('slovoklad_keyboard_support.log', 'a') do |f|
+      f.puts "[#{Time.now}] supports_keyboard_enhancement=#{supported.inspect}"
+      f.puts "[#{Time.now}] TERM=#{ENV['TERM']} TERM_PROGRAM=#{ENV['TERM_PROGRAM']}"
+    end
 
     return unless RatatuiRuby.respond_to?(:enable_mouse_capture!)
 
@@ -590,7 +616,7 @@ class RatatuiRubyApp
 
     if @active_focus == :startup_screen
       render_startup_screen_view(tui, frame, frame.area)
-      PopupView.draw(frame, @popup.active_popup, tui) if @popup.active? && !@popup.active_popup.nil?
+      PopupView.draw(frame, @popup.active_popup, tui, os_keyboard_layout) if @popup.active? && !@popup.active_popup.nil?
       return
     end
 
@@ -614,7 +640,7 @@ class RatatuiRubyApp
       render_normal_mode(tui, frame, top_region, middle_region)
     end
 
-    PopupView.draw(frame, @popup.active_popup, tui) if @popup.active? && !@popup.active_popup.nil?
+    PopupView.draw(frame, @popup.active_popup, tui, os_keyboard_layout) if @popup.active? && !@popup.active_popup.nil?
   end
 
   def render_study_mode(tui, frame)
@@ -804,6 +830,15 @@ class RatatuiRubyApp
   def process_application_event(event)
     case event
     in { type: :key, code: key_code, modifiers: raw_mods }
+
+      File.open('slovoklad_raw_keys.log', 'a') do |f|
+        f.puts(
+          "[#{Time.now}] event=#{event.inspect} " \
+          "key=#{key_code.inspect} modifiers=#{raw_mods.inspect} " \
+          "kitty=#{@kitty_keyboard_enabled}"
+        )
+      end
+
       _consumed = process_key_input(
         key_code,
         Array(raw_mods).map(&:to_s)
@@ -885,7 +920,6 @@ class RatatuiRubyApp
     # =========================================================================
     # sequences << "\e[2J\e[3J\e[H"
 
-    sequences << "\e[<u" if @kitty_keyboard_enabled
     # Restore iTerm2/terminal settings.
     sequences << "\e[8h" # bidi-herordening bij afsluiten herstellen: terminal handles bidi, not the app
     # sequences << "\e[?2004l"  # Bracketed paste was not enabled here, so do not disable it unconditionally.

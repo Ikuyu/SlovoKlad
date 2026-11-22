@@ -1,13 +1,13 @@
 require_relative '../lib/ratin_field'
 
 class PopupView
-  def self.draw(frame, popup_data, tui = nil)
+  def self.draw(frame, popup_data, tui = nil, keyboard_layout = nil)
     return if popup_data.nil?
 
     if popup_data[:type] == :form
-      draw_form_popup(frame, popup_data)
+      draw_form_popup(frame, popup_data, keyboard_layout)
     else
-      draw_text_popup(frame, popup_data, tui)
+      draw_text_popup(frame, popup_data, tui, keyboard_layout)
     end
   end
 
@@ -133,7 +133,7 @@ class PopupView
     %i[rtl right_to_left].include?(direction) ? :right : :left
   end
 
-  def self.draw_text_popup(frame, popup_data, tui)
+  def self.draw_text_popup(frame, popup_data, tui, keyboard_layout = nil)
     footer_key =
       popup_data[:footer_key] ||
       case popup_data[:type]
@@ -151,7 +151,7 @@ class PopupView
     # ============================================================
     # HELP POPUP
     # ============================================================
-    if popup_data[:type] == :help
+    if %i[help study_session_help].include?(popup_data[:type])
       message_rows = cleaned_message.split("\n")
       message_rows = [''] if message_rows.empty?
       footer_rows = [footer]
@@ -185,7 +185,7 @@ class PopupView
         box_height
       )
 
-      contents_block = build_text_popup_block(popup_data)
+      contents_block = build_text_popup_block(popup_data, keyboard_layout)
 
       frame.render_widget(
         RatatuiRuby::Widgets::Clear.new,
@@ -266,7 +266,7 @@ class PopupView
       dimensions[:full_height]
     )
 
-    contents_block = build_form_popup_block(popup_data)
+    contents_block = build_text_popup_block(popup_data, keyboard_layout)
 
     frame.render_widget(
       RatatuiRuby::Widgets::Clear.new,
@@ -341,7 +341,7 @@ class PopupView
     ].max
 
     full_height =
-      if popup_data[:type] == :help
+      if %i[help study_session_help].include?(popup_data[:type])
         [
           [needed_box_height, max_terminal_box_height].min,
           5
@@ -381,9 +381,25 @@ class PopupView
     visual_rows
   end
 
-  def self.build_text_popup_block(popup_data)
+  def self.build_text_popup_block(popup_data, keyboard_layout = nil)
+    titles = []
+
+    if popup_data[:show_input_indicators] == true &&
+       !keyboard_layout.to_s.empty?
+      titles << {
+        content: "⌨ #{keyboard_layout}",
+        alignment: :right,
+        position: :top,
+        style: {
+          fg: AppConfig.settings.theme_item(:window_border),
+          bg: AppConfig.settings.theme_item(:background)
+        }
+      }
+    end
+
     RatatuiRuby::Widgets::Block.new(
       title: popup_data[:title],
+      titles: titles,
       title_style: {
         fg: AppConfig.settings.theme_item(:window_title),
         bg: AppConfig.settings.theme_item(:background)
@@ -448,7 +464,7 @@ class PopupView
 
       visible_height_inside = dimensions[:visible_height_inside]
 
-    # Text rows + indicator + one blank line + fixed footer.
+      # Text rows + indicator + one blank line + fixed footer.
       scrollable_height = [
         visible_height_inside - footer_height - 2,
         1
@@ -547,7 +563,7 @@ class PopupView
     # ============================================================
     # HELP
     # ============================================================
-    if popup_data && popup_data[:type] == :help
+    if popup_data && %i[help study_session_help].include?(popup_data[:type])
       actual_scrollable_height = [scrollable_height.to_i, 1].max
 
       scrollable_region = RatatuiRuby::Layout::Rect.new(
@@ -680,14 +696,14 @@ class PopupView
     )
 
     footer_visual_rows =
-      if popup_data[:type] == :help
+      if %i[help study_session_help].include?(popup_data[:type])
         visual_rows.select { |row| row[:footer] }
       else
         []
       end
 
     scrollable_visual_rows =
-      if popup_data[:type] == :help
+      if %i[help study_session_help].include?(popup_data[:type])
         visual_rows.reject { |row| row[:footer] }
       else
         visual_rows
@@ -702,7 +718,7 @@ class PopupView
     ].max
 
     full_height =
-      if popup_data[:type] == :help
+      if %i[help study_session_help].include?(popup_data[:type])
         calculated =
           if needed_box_height <= max_terminal_box_height
             needed_box_height
@@ -721,14 +737,14 @@ class PopupView
     ].max
 
     footer_height =
-      if popup_data[:type] == :help
+      if %i[help study_session_help].include?(popup_data[:type])
         footer_visual_rows.length
       else
         0
       end
 
     more_height =
-      if popup_data[:type] == :help &&
+      if %i[help study_session_help].include?(popup_data[:type]) &&
          scrollable_visual_rows.length > 0
         2
       else
@@ -749,7 +765,7 @@ class PopupView
     ].max
 
     show_scrollbar =
-      popup_data[:type] == :help &&
+      %i[help study_session_help].include?(popup_data[:type]) &&
       max_scroll > 0
 
     # If a scrollbar is needed, the text column becomes one
@@ -777,7 +793,7 @@ class PopupView
         visual_rows.length + 2
 
       full_height =
-        if popup_data[:type] == :help
+        if %i[help study_session_help].include?(popup_data[:type])
           calculated =
             if needed_box_height <= max_terminal_box_height
               needed_box_height
@@ -914,7 +930,7 @@ class PopupView
     )
   end
 
-  def self.draw_form_popup(frame, popup_data)
+  def self.draw_form_popup(frame, popup_data, keyboard_layout = nil)
     settings = AppConfig.settings
     fields = popup_data[:fields] || {}
     field_keys = fields.keys
@@ -938,7 +954,7 @@ class PopupView
 
     popup_height = calculate_form_popup_height(field_keys, is_search_or_replace, has_replace, has_name_field)
     popup_area = calculate_centered_rect(frame.area, 70, popup_height)
-    contents_block = build_form_popup_block(popup_data)
+    contents_block = build_form_popup_block(popup_data, keyboard_layout)
 
     frame.render_widget(RatatuiRuby::Widgets::Clear.new, popup_area)
     frame.render_widget(contents_block, popup_area)
@@ -966,14 +982,36 @@ class PopupView
     end
   end
 
-  def self.build_form_popup_block(popup_data)
+  def self.build_form_popup_block(popup_data, keyboard_layout = nil)
+    titles = []
+
+    if popup_data[:show_input_indicators] == true &&
+       !keyboard_layout.to_s.empty?
+      titles << {
+        content: " ⌨ #{keyboard_layout} ",
+        alignment: :right,
+        position: :top,
+        style: {
+          fg: AppConfig.settings.theme_item(:window_border),
+          bg: AppConfig.settings.theme_item(:background)
+        }
+      }
+    end
+
     RatatuiRuby::Widgets::Block.new(
       title: " #{popup_data[:title]} ",
-      title_style: { fg: AppConfig.settings.theme_item(:window_title),
-                     bg: AppConfig.settings.theme_item(:background) },
-      border_style: { fg: AppConfig.settings.theme_item(:window_border),
-                      bg: AppConfig.settings.theme_item(:background) },
-      style: { bg: AppConfig.settings.theme_item(:background) },
+      titles: titles,
+      title_style: {
+        fg: AppConfig.settings.theme_item(:window_title),
+        bg: AppConfig.settings.theme_item(:background)
+      },
+      border_style: {
+        fg: AppConfig.settings.theme_item(:window_border),
+        bg: AppConfig.settings.theme_item(:background)
+      },
+      style: {
+        bg: AppConfig.settings.theme_item(:background)
+      },
       borders: [:all],
       border_type: AppConfig.settings.corner
     )
@@ -1408,7 +1446,7 @@ class PopupView
     # Cursorindex begrenzen.
     cursor_index = [[cursor_index, 0].max, cells.length - 1].min
 
-  # Calculate the viewport in terminal cells to keep the cursor visible.
+    # Calculate the viewport in terminal cells to keep the cursor visible.
     start_index = cursor_index
     used_width = cells[cursor_index][:width]
 

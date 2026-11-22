@@ -183,11 +183,11 @@ module CliHandler
         options[:export] = format.downcase
       end
 
-      opts.on('-r', '--reset', 'Reset FILE') do
+      opts.on('-r', '--reset', 'Reset FILE (cannot be undone)') do
         options[:reset] = true
       end
 
-      opts.on('-d', '--dedup', 'Remove duplicate entries from FILE') do
+      opts.on('-d', '--dedup', 'Remove duplicate entries from FILE (cannot be undone)') do
         options[:dedup] = true
       end
     end

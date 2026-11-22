@@ -410,6 +410,28 @@ module NavigationInputHandler
     @active_focus = :popup
   end
 
+  # Open the dedicated help menu for an active study session.
+  def open_study_session_help_popup
+    # Preserve the exact pause state, including a manual pause.
+    @test_timer_paused_before_help = (@test_timer_paused == true)
+
+    # Pause both the countdown timer and the elapsed-time stopwatch.
+    @test_timer_paused = true
+    @test_last_tick_time = Process.clock_gettime(Process::CLOCK_MONOTONIC)
+
+    @focus_before_help = :study_focus_mode
+    @last_focus = :study_focus_mode
+
+    @popup.show(
+      title: " #{AppConfig.settings.language_string(:help_study_title)} ",
+      message: AppConfig.settings.language_string(:help_study),
+      type: :study_session_help,
+      alignment: :left
+    )
+
+    @active_focus = :popup
+  end
+
   def handle_left_navigation
     if @active_focus == :replace_mode && @last_focus == :table
       execute_undo if @replace_action_performed && respond_to?(:execute_undo) && @undo_stack && !@undo_stack.empty?

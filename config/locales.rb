@@ -305,7 +305,7 @@ module AppTranslations
            Shift+M, Option+Space,
            Shift+Home, Shift+End,
            Shift+PageUp, Shift+PageDown : Mark items for bulk deletion
-        Enter                           : Enter table
+        Enter                           : Go to deck
         A, +, F7                        : Add item
         Shift+R, F2                     : Rename item
         Backspace, -, F8                : Delete item(s)
@@ -336,6 +336,7 @@ module AppTranslations
            Shift+M, Option+Space,
            Shift+Home, Shift+End,
            Shift+PageUp, Shift+PageDown : Mark cards for bulk deletion
+        Shift+Enter                     : Go to library
         Space                           : (De)select card(s)
         A, +, F7                        : Add card
         Enter, E, F2                    : Edit card
@@ -728,7 +729,7 @@ module AppTranslations
            Shift+M, Option+Space,
            Shift+Home, Shift+End,
            Shift+PageUp, Shift+PageDown : Markeer onderdelen voor bulk verwijdering
-        Enter                           : Naar tabel
+        Enter                           : Naar kaartenbak
         A, +, F7                        : Onderdeel toevoegen
         Shift+R, F2                     : Onderdeel hernoemen
         Backspace, -, F8                : Onderde(e)l(en) verwijderen
@@ -759,6 +760,7 @@ module AppTranslations
            Shift+M, Option+Space,
            Shift+Home, Shift+End,
            Shift+PageUp, Shift+PageDown : Markeer kaarten voor bulk verwijdering
+        Shift+Enter                     : Naar bibliotheek
         Space                           : Kaart(en) (de)selecteren
         A, +, F7                        : Kaart toevoegen
         Enter, E, F2                    : Kaart wijzigen

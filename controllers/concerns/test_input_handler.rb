@@ -105,11 +105,8 @@ module TestInputHandler
 
     current_time = Process.clock_gettime(Process::CLOCK_MONOTONIC)
 
-    # Bij pauze of een geopend popupvenster loopt de tijd niet door.
-    popup_is_open = defined?(@popup) && @popup &&
-                    @popup.respond_to?(:active?) && @popup.active?
-
-    if @test_timer_paused == true || popup_is_open
+    # Both the session timer and stopwatch stop when the session is paused.
+    if @test_timer_paused == true
       @test_last_tick_time = current_time
       return
     end

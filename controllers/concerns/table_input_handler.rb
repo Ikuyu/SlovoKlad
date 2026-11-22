@@ -241,10 +241,41 @@ module TableInputHandler
     end
 
     context = prepare_table_input_context(key, modifiers)
+
+    # DEBUG Shift+Enter — schrijf toetsinformatie naar bestand
+    begin
+      File.open('slovoklad_shift_enter.log', 'a') do |f|
+        f.puts(
+          "[#{Time.now}] " \
+          "key=#{key.inspect} " \
+          "key_class=#{key.class} " \
+          "modifiers=#{modifiers.inspect} " \
+          "context_shift=#{context[:has_shift].inspect} " \
+          "focus=#{@active_focus.inspect}"
+        )
+      end
+    rescue StandardError => e
+      warn "Shift+Enter debug error: #{e.message}"
+    end
+
     return true if context[:pure_alt_space_handled]
     return false if context[:invalid_ctrl]
 
     key = context[:key]
+
+    # Shift+Enter: ga vanuit de table terug naar de tree.
+    is_enter_key = key.to_s.strip.downcase.sub(/\A:/, '') == 'enter' ||
+                   key.to_s == "\r" || key.to_s == "\n" || key == :enter
+
+    if @active_focus == :table && context[:has_shift] && is_enter_key
+      wipe_all_search_artifacts
+      @last_focus = :tree
+      @active_focus = :tree
+
+      @tree.refresh_nodes if @tree.respond_to?(:refresh_nodes)
+
+      return true
+    end
 
     process_table_input_page_navigation(context, key)
     return true if context[:page_navigation_consumed]
