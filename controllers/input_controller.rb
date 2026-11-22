@@ -16,6 +16,69 @@ class RatatuiRubyApp
   include StatusbarInputHandler
   include SpeechHandler
 
+  def capture_selection_state
+    {
+      focus: @active_focus,
+
+      tree_paths: (@selected_tree_paths || []).dup,
+      tree_selected: @tree_state&.selected,
+      tree_anchor: @tree_selection_anchor,
+      tree_anchor_index: @tree_selection_anchor_index,
+      tree_shift_active: @tree_shift_selection_active,
+      tree_page_viewport_start: @tree_page_viewport_start,
+
+      table_rows: (@selected_table_rows || []).dup,
+      table_selected: @table_state&.selected,
+      table_anchor: @selection_anchor,
+      table_viewport_offset: @table_viewport_offset,
+      normal_page_viewport_start: @normal_page_viewport_start,
+      search_page_viewport_start: @search_page_viewport_start,
+      current_card_idx: @current_card_idx,
+      search_current_match_idx: @search_current_match_idx
+    }
+  end
+
+  def restore_selection_state(state)
+    return false unless state
+
+    @active_focus = state[:focus]
+
+    @selected_tree_paths = (state[:tree_paths] || []).dup
+    @tree_selection_anchor = state[:tree_anchor]
+    @tree_selection_anchor_index = state[:tree_anchor_index]
+    @tree_shift_selection_active = state[:tree_shift_active]
+
+    @selected_table_rows = (state[:table_rows] || []).dup
+    @selection_anchor = state[:table_anchor]
+
+    @current_card_idx = state[:current_card_idx]
+    @search_current_match_idx = state[:search_current_match_idx]
+
+    @normal_page_viewport_start = state[:normal_page_viewport_start]
+    @search_page_viewport_start = state[:search_page_viewport_start]
+
+    @tree_state.select(state[:tree_selected]) if @tree_state
+    @table_state.select(state[:table_selected]) if @table_state
+
+    unless state[:tree_page_viewport_start].nil?
+      @tree_page_viewport_start = state[:tree_page_viewport_start]
+      set_tree_page_offset(state[:tree_page_viewport_start]) if respond_to?(:set_tree_page_offset, true)
+    end
+
+    set_table_viewport_offset(state[:table_viewport_offset]) unless state[:table_viewport_offset].nil?
+
+    @tree.refresh_nodes if @tree.respond_to?(:refresh_nodes)
+
+    true
+  end
+
+  def record_selection_change(before_state)
+    after_state = capture_selection_state
+    return if before_state == after_state
+
+    @last_selection_state = after_state
+  end
+
   def handle_undo_redo_shortcuts(key, has_ctrl, has_shift)
     return false unless key
 
@@ -26,44 +89,60 @@ class RatatuiRubyApp
     is_redo = (is_y && has_ctrl) || (is_z && has_ctrl && has_shift)
     return false unless is_undo || is_redo
 
+    @history_action_stack ||= []
+    @history_redo_action_stack ||= []
+
+    action = if is_undo
+               @history_action_stack.last
+             else
+               @history_redo_action_stack.last
+             end
+
+    return false unless action == :data
+
     focus_context = @active_focus
-    success = if is_undo
-                respond_to?(:execute_undo) && execute_undo
-              else
-                respond_to?(:execute_redo) && execute_redo
-              end
+    success = is_undo ? execute_undo : execute_redo
     return false unless success
 
-    if focus_context == :replace_mode && @last_search_query
-      @active_focus = :replace_mode
-      new_deck = @library.subjects[@current_subject_idx || 0]&.sources&.[](@current_source_idx || 0)&.decks&.[](@current_deck_idx || 0)
-      if new_deck
-        @replace_cards = new_deck.cards if defined?(@replace_cards)
-        @search_matches = perform_card_scan(@last_search_query, new_deck.cards) if respond_to?(:perform_card_scan)
+    if is_undo
+      if focus_context == :replace_mode && @last_search_query
+        @active_focus = :replace_mode
+        new_deck = @library.subjects[@current_subject_idx || 0]&.sources&.[](@current_source_idx || 0)&.decks&.[](@current_deck_idx || 0)
+
+        if new_deck
+          @replace_cards = new_deck.cards if defined?(@replace_cards)
+          @search_matches = perform_card_scan(@last_search_query, new_deck.cards) if respond_to?(:perform_card_scan)
+        end
+      elsif focus_context == :tree
+        @active_focus = :tree
       end
-    elsif focus_context == :tree
-      @active_focus = :tree
-    end
 
-    if %i[table replace_mode].include?(focus_context) && defined?(@table_state) && @table_state
-      s_idx = @current_subject_idx || 0
-      src_idx = @current_source_idx || 0
-      d_idx   = @current_deck_idx || 0
-      current_deck = @library.subjects[s_idx]&.sources&.[](src_idx)&.decks&.[](d_idx)
+      if %i[table replace_mode].include?(focus_context) && defined?(@table_state) && @table_state
+        s_idx = @current_subject_idx || 0
+        src_idx = @current_source_idx || 0
+        d_idx = @current_deck_idx || 0
+        current_deck = @library.subjects[s_idx]&.sources&.[](src_idx)&.decks&.[](d_idx)
 
-      if current_deck && current_deck.cards && !current_deck.cards.empty?
-        current_selection = @table_state.selected || 0
-        # Securely clamp the row index within the boundaries of the restored card collection array
-        clamped_selection = [current_selection, current_deck.cards.length - 1].min
-        clamped_selection = [clamped_selection, 0].max
-
-        @table_state.select(clamped_selection)
-      else
-        @table_state.select(nil)
+        if current_deck && current_deck.cards && !current_deck.cards.empty?
+          current_selection = @table_state.selected || 0
+          clamped_selection = [[current_selection, 0].max, current_deck.cards.length - 1].min
+          @table_state.select(clamped_selection)
+        else
+          @table_state.select(nil)
+        end
       end
     end
 
     @tree.refresh_nodes if @tree.respond_to?(:refresh_nodes)
+
+    if is_undo
+      @history_action_stack.pop
+      @history_redo_action_stack << action
+    else
+      @history_redo_action_stack.pop
+      @history_action_stack << action
+    end
+
     true
   end
 
@@ -816,20 +895,19 @@ def handle_focus_specific_input(key, modifiers, key_raw_check, settings)
   end
 end
 
-# Verwerkt Ctrl+A en selecteert alle items binnen het actieve tabel- of boomgebied.
-def handle_global_select_all_shortcut(key, key_raw_check, has_ctrl_check, popup_is_active)
-  is_ctrl_a_keystroke = key == "\x01" || key.to_s.strip == "\x01" || (key_raw_check == 'a' && has_ctrl_check)
-  return nil unless is_ctrl_a_keystroke && !popup_is_active
+# Verwerkt Ctrl+Shift+A en selecteert alle items binnen het actieve tabel- of boomgebied.
 
-  if @active_focus == :table
-    execute_table_select_all
-    return true
-  elsif @active_focus == :tree
-    execute_tree_select_all
-    return true
-  end
+def handle_global_select_all_shortcut(key, key_raw_check, has_ctrl_check,
+                                      has_shift_check, popup_is_active)
+  return nil if popup_is_active
 
-  nil
+  is_ctrl_a = key_raw_check == 'a' && has_ctrl_check
+  return nil unless is_ctrl_a
+
+  # Ctrl+A blokkeren, Ctrl+Shift+A doorlaten.
+  return nil if has_shift_check
+
+  true
 end
 
 # Handle the r shortcut only when reset is safe in the current context.
@@ -1642,7 +1720,9 @@ def handle_global_input_shortcuts(key, modifiers, key_raw_check, has_ctrl_check,
   )
 
   # Houd selectie, reset en deduplicatie elk in een eigen, gerichte helper.
-  return true if handle_global_select_all_shortcut(key, key_raw_check, has_ctrl_check, popup_is_active)
+  return true if handle_global_select_all_shortcut(
+    key, key_raw_check, has_ctrl_check, has_shift_check, popup_is_active
+  )
   return true if handle_global_reset_shortcut(
     key_raw_check, has_shift_check, has_ctrl_check, has_alt_check,
     popup_is_active, search_or_replace_active, is_already_studying
@@ -1656,6 +1736,7 @@ def handle_global_input_shortcuts(key, modifiers, key_raw_check, has_ctrl_check,
 end
 
 # Reset only the selected rows in the table.
+
 def handle_selected_table_reset
   return false unless @active_focus == :table && defined?(@selected_table_rows) && @selected_table_rows.any?
 
@@ -1668,14 +1749,22 @@ def handle_selected_table_reset
 
   target_cards = @selected_table_rows.map { |idx| active_deck.cards[idx] }.compact
   reset_count = 0
+  snapshot_taken = false
+
   target_cards.each do |card|
-    if card.respond_to?(:study) && [false, 'false'].include?(card.study)
-      card.study = true
-      reset_count += 1
+    next unless card.respond_to?(:study) && [false, 'false'].include?(card.study)
+
+    unless snapshot_taken
+      allow_snapshot!
+      save_history_snapshot
+      snapshot_taken = true
     end
+
+    card.study = true
+    reset_count += 1
   end
 
-  @library_dirty = true
+  @library_dirty = true if reset_count.positive?
   @selected_table_rows = []
   clear_command_mode_visuals
   @command_mode_visible = false
@@ -1720,47 +1809,50 @@ end
 
 def handle_selected_tree_multi_reset(settings)
   total_reset_cards = 0
+  snapshot_taken = false
 
   @selected_tree_paths.each do |path|
     next unless path.is_a?(Array)
 
-    # Always find the subject by its persistent ID (the first element in the path).
     subject = @library.subjects.find { |s| s.id.to_s == path[0].to_s }
     next unless subject
 
-    case path.length
-    when 1 # Hele Subject laag geselecteerd
-      subject.sources.each do |src|
-        if src.decks
-          total_reset_cards += count_memorised_cards(src.decks) if respond_to?(:count_memorised_cards, true)
-          src.decks.each(&:reset)
-        end
+    target_decks = case path.length
+                   when 1
+                     subject.sources.flat_map { |src| src.decks || [] }
+                   when 2
+                     source = subject.sources.find { |src| src.id.to_s == path[1].to_s }
+                     source ? (source.decks || []) : []
+                   when 3
+                     source = subject.sources.find { |src| src.id.to_s == path[1].to_s }
+                     deck = source&.decks&.find { |d| d.id.to_s == path[2].to_s }
+                     deck ? [deck] : []
+                   else
+                     []
+                   end
+
+    target_decks.each do |deck|
+      reset_count = count_memorised_cards([deck])
+      next unless reset_count.positive?
+
+      unless snapshot_taken
+        allow_snapshot!
+        save_history_snapshot
+        snapshot_taken = true
       end
-    when 2 # Losse Source laag geselecteerd
-      source = subject.sources.find { |src| src.id.to_s == path[1].to_s }
-      if source && source.decks
-        total_reset_cards += count_memorised_cards(source.decks) if respond_to?(:count_memorised_cards, true)
-        source.decks.each(&:reset)
-      end
-    when 3 # Specifiek Deck geselecteerd
-      source = subject.sources.find { |src| src.id.to_s == path[1].to_s }
-      deck = source&.decks&.find { |d| d.id.to_s == path[2].to_s }
-      if deck
-        total_reset_cards += count_memorised_cards([deck]) if respond_to?(:count_memorised_cards, true)
-        deck.reset
-      end
+
+      deck.reset
+      total_reset_cards += reset_count
     end
   end
 
-  # Ruim de registers en visuele selectie direct netjes op
-  @library_dirty = true
+  @library_dirty = true if total_reset_cards.positive?
   @selected_tree_paths = []
 
   clear_command_mode_visuals if respond_to?(:clear_command_mode_visuals, true)
   @command_mode_visible = false
   @statusbar_field.text = '' if defined?(@statusbar_field) && @statusbar_field
 
-  # Provide symmetric feedback for the entire selection.
   if total_reset_cards.zero?
     trigger_statusbar_message(
       "#{settings.language_string(:statusbar_nothing_to_reset_in)} #{settings.language_string(:statusbar_selected_items)}!",
@@ -1846,7 +1938,24 @@ def perform_reset(has_bang_override = false)
     end
   end
 
-  total_reset_cards = reset_cards_for_target(target_type, active_deck, active_source, active_subject)
+  total_reset_cards = count_memorised_cards(
+    case target_type
+    when :deck
+      [active_deck].compact
+    when :source
+      active_source ? active_source.decks : []
+    when :subject
+      active_subject ? active_subject.sources.flat_map { |src| src.decks || [] } : []
+    else
+      []
+    end
+  )
+
+  if total_reset_cards.positive?
+    allow_snapshot!
+    save_history_snapshot
+    reset_cards_for_target(target_type, active_deck, active_source, active_subject)
+  end
 
   # 5. SUCCES FEEDBACK
   clear_command_mode_visuals
@@ -1859,7 +1968,7 @@ def perform_reset(has_bang_override = false)
                    :tree # Safe global fallback standard
                  end
 
-  @library_dirty = true
+  @library_dirty = true if total_reset_cards.positive?
   @active_focus = origin_focus
   @last_focus = origin_focus
 
@@ -1896,9 +2005,18 @@ def handle_selected_table_dedup
   target_cards = @selected_table_rows.map { |idx| active_deck.cards[idx] }.compact
   seen = {}
   duplicates_removed = 0
+  snapshot_taken = false
+
   target_cards.each do |card|
     sig = "#{card.term.to_s.strip}|#{card.context.to_s.strip}|#{card.meaning.to_s.strip}"
+
     if seen[sig]
+      unless snapshot_taken
+        allow_snapshot!
+        save_history_snapshot
+        snapshot_taken = true
+      end
+
       active_deck.cards.delete(card)
       duplicates_removed += 1
     else
@@ -1906,7 +2024,7 @@ def handle_selected_table_dedup
     end
   end
 
-  @library_dirty = true
+  @library_dirty = true if duplicates_removed.positive?
   @selected_table_rows = []
   clear_command_mode_visuals
   @command_mode_visible = false
@@ -1924,53 +2042,61 @@ end
 
 def handle_selected_tree_multi_dedup(settings)
   total_duplicates_removed = 0
+  snapshot_taken = false
 
   @selected_tree_paths.each do |path|
     next unless path.is_a?(Array)
 
-    # Always match the subject by its persistent ID (the first element in the path).
     subject = @library.subjects.find { |s| s.id.to_s == path[0].to_s }
     next unless subject
 
-    case path.length
-    when 1 # Hele Subject laag geselecteerd
-      subject.sources.each do |src|
-        next unless src.decks
+    selected_decks = case path.length
+                     when 1
+                       subject.sources.flat_map { |src| src.decks || [] }
+                     when 2
+                       source = subject.sources.find { |src| src.id.to_s == path[1].to_s }
+                       source ? (source.decks || []) : []
+                     when 3
+                       source = subject.sources.find { |src| src.id.to_s == path[1].to_s }
+                       deck = source&.decks&.find { |d| d.id.to_s == path[2].to_s }
+                       deck ? [deck] : []
+                     else
+                       []
+                     end
 
-        src.decks.each do |d|
-          total_duplicates_removed += d.remove_duplicates! if d.respond_to?(:remove_duplicates!)
-        end
+    selected_decks.each do |deck|
+      next unless deck.respond_to?(:cards) && deck.respond_to?(:remove_duplicates!)
+
+      duplicate_count = deck.cards.length - deck.cards.map do |card|
+        "#{card.term.to_s.strip}|#{card.context.to_s.strip}|#{card.meaning.to_s.strip}"
+      end.uniq.length
+
+      next unless duplicate_count.positive?
+
+      unless snapshot_taken
+        allow_snapshot!
+        save_history_snapshot
+        snapshot_taken = true
       end
-    when 2 # Losse Source laag geselecteerd
-      source = subject.sources.find { |src| src.id.to_s == path[1].to_s }
-      if source && source.decks
-        source.decks.each do |d|
-          total_duplicates_removed += d.remove_duplicates! if d.respond_to?(:remove_duplicates!)
-        end
-      end
-    when 3 # Specifiek Deck geselecteerd
-      source = subject.sources.find { |src| src.id.to_s == path[1].to_s }
-      deck = source&.decks&.find { |d| d.id.to_s == path[2].to_s }
-      total_duplicates_removed += deck.remove_duplicates! if deck && deck.respond_to?(:remove_duplicates!)
+
+      total_duplicates_removed += deck.remove_duplicates!
     end
   end
 
-  # Ruim de registers en visuele selectie direct netjes op
-  @library_dirty = true
+  @library_dirty = true if total_duplicates_removed.positive?
   @selected_tree_paths = []
 
   clear_command_mode_visuals if respond_to?(:clear_command_mode_visuals, true)
   @command_mode_visible = false
   @statusbar_field.text = '' if defined?(@statusbar_field) && @statusbar_field
 
-  # Provide symmetric feedback for the entire selection.
   if total_duplicates_removed.zero?
     main_msg = settings.language_string(:statusbar_no_duplicates_found_in).to_s
-    suffix   = settings.language_string(:statusbar_selected_items).to_s
+    suffix = settings.language_string(:statusbar_selected_items).to_s
     trigger_statusbar_message("#{main_msg} #{suffix}!", type: :info)
   else
     main_msg = settings.language_string(:statusbar_duplicates_removed_from).to_s
-    suffix   = settings.language_string(:statusbar_selected_items).to_s
+    suffix = settings.language_string(:statusbar_selected_items).to_s
     trigger_statusbar_message("#{total_duplicates_removed} #{main_msg} #{suffix}!", type: :info)
   end
 
@@ -2040,30 +2166,37 @@ def perform_dedup(has_bang_override = false)
     end
   end
 
-  # 4. 🟢 UITVOERING: Vuur de gerichte deduplicatie-pipeline af
+  # 4. UITVOERING: deduplicatie met één snapshot bij echte wijzigingen
   total_duplicates_removed = 0
+  snapshot_taken = false
 
-  case target_type
-  when :deck
-    if active_deck && active_deck.respond_to?(:remove_duplicates!)
-      total_duplicates_removed += active_deck.remove_duplicates!
-    end
-  when :source
-    if active_source && active_source.decks
-      active_source.decks.each do |d|
-        total_duplicates_removed += d.remove_duplicates! if d.respond_to?(:remove_duplicates!)
-      end
-    end
-  when :subject
-    if active_subject && active_subject.sources
-      active_subject.sources.each do |src|
-        next unless src.decks
+  selected_decks = case target_type
+                   when :deck
+                     active_deck ? [active_deck] : []
+                   when :source
+                     active_source ? (active_source.decks || []) : []
+                   when :subject
+                     active_subject ? active_subject.sources.flat_map { |src| src.decks || [] } : []
+                   else
+                     []
+                   end
 
-        src.decks.each do |d|
-          total_duplicates_removed += d.remove_duplicates! if d.respond_to?(:remove_duplicates!)
-        end
-      end
+  selected_decks.each do |deck|
+    next unless deck.respond_to?(:cards) && deck.respond_to?(:remove_duplicates!)
+
+    duplicate_count = deck.cards.length - deck.cards.map do |card|
+      "#{card.term.to_s.strip}|#{card.context.to_s.strip}|#{card.meaning.to_s.strip}"
+    end.uniq.length
+
+    next unless duplicate_count.positive?
+
+    unless snapshot_taken
+      allow_snapshot!
+      save_history_snapshot
+      snapshot_taken = true
     end
+
+    total_duplicates_removed += deck.remove_duplicates!
   end
 
   # 5. SUCCES FEEDBACK
@@ -2077,7 +2210,7 @@ def perform_dedup(has_bang_override = false)
                    :tree
                  end
 
-  @library_dirty = true
+  @library_dirty = true if total_duplicates_removed.positive?
   @active_focus = origin_focus
   @last_focus = origin_focus
 

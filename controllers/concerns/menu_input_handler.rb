@@ -159,6 +159,8 @@ def show_about_popup
     settings.language_string(:about_message),
     app_name: @app_name,
     app_version: @app_version,
+    ruby_version: RUBY_VERSION,
+    ratatui_ruby_version: Gem.loaded_specs.fetch('ratatui_ruby').version,
     app_copyright_year: @app_copyright_year
   )
 

@@ -224,10 +224,10 @@ bundle exec ruby app.rb \
 
 | Shortcut | Action |
 |---|---|
-| `Fn↑`, `Fn←`, `Option+↑`, `Control+A` | Move the insertion point to the beginning of the line. |
-| `Fn↓`, `Fn→`, `Option+↓`, `Control+E` | Move the insertion point to the end of the line. |
 | `Control+F`, `→` | Move one character forwards. |
 | `Control+B`, `←` | Move one character backwards. |
+| `Fn↑`, `Fn←`, `Option+↑`, `Control+A` | Move the insertion point to the beginning of the line. |
+| `Fn↓`, `Fn→`, `Option+↓`, `Control+E` | Move the insertion point to the end of the line. |
 | `Option+F`, `Option+→` | Move the insertion point to the end of the next word. |
 | `Option+B`, `Option+←` | Move the insertion point to the beginning of the previous word. |
 | `Control+L` | Centre the insertion point in the text. |
@@ -239,7 +239,7 @@ bundle exec ruby app.rb \
 | Shortcut | Action |
 |---|---|
 | `Control+W`, `Option+Backspace` | Delete the word to the left of the insertion point. |
-| `Option+D`, `Option+Fn+Backspace` | Delete the word to the right of the insertion point. |
+| `Option+D`, `Fn+Option+Backspace` | Delete the word to the right of the insertion point. |
 | `Control+H`, `Backspace` | Delete the character to the left of the insertion point. |
 | `Control+D`, `Fn+Backspace` | Delete the character to the right of the insertion point. |
 | `Control+K` | Delete the text from the insertion point to the end of the line. |

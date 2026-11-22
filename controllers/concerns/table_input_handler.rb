@@ -4,12 +4,6 @@ require_relative '../../audio/sound_manager'
 module TableInputHandler
   private
 
-  def table_page_debug(message)
-    File.open('table_page_debug.log', 'a') do |file|
-      file.puts("[#{Time.now.strftime('%H:%M:%S')}] #{message}")
-    end
-  end
-
   def execute_search(query_text)
     return if query_text.to_s.strip.empty?
 
@@ -116,13 +110,29 @@ module TableInputHandler
     if replace_all
       # 1. Lokale bulk-wijziging: we muteren alleen het actieve deck!
       # 👉 We gebruiken hier dus je standaard snapshot-pipeline voor data parity!
-      allow_snapshot! if respond_to?(:allow_snapshot!)
-      save_history_snapshot if respond_to?(:save_history_snapshot)
+      snapshot_saved = false
+      changes_made = false
 
-      cards_to_search.each { |card| modify_card.call(card) }
+      cards_to_search.each do |card|
+        %i[term context meaning].each do |field|
+          original = card.public_send(field)
+          next unless original =~ search_regex
 
-      @library_dirty = true
+          replacement = original.gsub(search_regex, replace_text)
+          next if replacement == original
 
+          unless snapshot_saved
+            allow_snapshot! if respond_to?(:allow_snapshot!)
+            save_history_snapshot if respond_to?(:save_history_snapshot)
+            snapshot_saved = true
+          end
+
+          card.public_send("#{field}=", replacement)
+          changes_made = true
+        end
+      end
+
+      @library_dirty = true if changes_made
       # 2. ⚡ DE EXIT GRENDEL: Sluit alle vlaggen direct en onherroepelijk af!
       @interactively_replacing = false
       @replace_action_performed = false
@@ -142,14 +152,29 @@ module TableInputHandler
       # =========================================================================
       return unless @search_matches && @search_matches[@search_current_match_idx]
 
-      allow_snapshot! if respond_to?(:allow_snapshot!)
-      save_history_snapshot if respond_to?(:save_history_snapshot)
-
       current_card_idx = @search_matches[@search_current_match_idx]
       target_card = cards_to_search[current_card_idx]
-      modify_card.call(target_card) if target_card
 
-      @library_dirty = true
+      if target_card
+        changes = %i[term context meaning].filter_map do |field|
+          original = target_card.public_send(field)
+          next unless original =~ search_regex
+
+          replacement = original.gsub(search_regex, replace_text)
+          [field, replacement] if replacement != original
+        end
+
+        unless changes.empty?
+          allow_snapshot! if respond_to?(:allow_snapshot!)
+          save_history_snapshot if respond_to?(:save_history_snapshot)
+
+          changes.each do |field, replacement|
+            target_card.public_send("#{field}=", replacement)
+          end
+
+          @library_dirty = true
+        end
+      end
 
       # Run a fresh search to keep the remaining highlights up to date.
       execute_search(query_text)
@@ -175,6 +200,18 @@ module TableInputHandler
   def handle_table_input(key, focus_on_enter, modifiers = [])
     mods = Array(modifiers).map { |m| m.to_s.downcase }
     key_raw = key.to_s
+
+    key = case key
+          when :backspace, :back_space
+            'backspace'
+          else
+            case key_raw
+            when "\b", "\x7f", "\u007f", '127', 'Backspace', 'back_space'
+              'backspace'
+            else
+              key
+            end
+          end
 
     is_normal_space = (key == :space || key_raw == ' ' || key_raw == 'space') &&
                       !mods.include?('shift') && !mods.include?('alt') &&
@@ -261,14 +298,26 @@ module TableInputHandler
     key_str = key.to_s.strip.sub(/\A:/, '')
     if has_ctrl
       allowed_tree_ctrl_keys = %w[u d f h z y n p a]
-
       ctrl_key = key_str.tr('-', '_').downcase
-      return { pure_alt_space_handled: true, invalid_ctrl: true } unless allowed_tree_ctrl_keys.include?(ctrl_key)
 
-      # Als het ctrl+a is, vermommen we het als de shift-variant die al bestaat!
-      if key_str == 'a'
+      unless allowed_tree_ctrl_keys.include?(ctrl_key)
+        return {
+          pure_alt_space_handled: true,
+          invalid_ctrl: true
+        }
+      end
+
+      if ctrl_key == 'a'
+        # Alleen Ctrl+Shift+A mag door naar de selectieactie.
+        unless has_shift
+          return {
+            pure_alt_space_handled: true,
+            invalid_ctrl: true
+          }
+        end
+
+        key = 'A'
         key_str = 'A'
-        has_shift = true
       end
     end
 
@@ -289,6 +338,7 @@ module TableInputHandler
     is_shift_page_down = context[:is_search_page_down] && context[:has_shift]
 
     if is_shift_page_up || is_shift_page_down
+      before_state = capture_selection_state
       # 🎯 CHIRURGISCHE LOCK: Voorkom dat dit event straks nóg een keer door handle_table_navigation stroomt!
       context[:page_navigation_consumed] = true
 
@@ -332,6 +382,8 @@ module TableInputHandler
       else
         @normal_page_viewport_start = @table_viewport_offset
       end
+
+      record_selection_change(before_state)
 
       return true
     end
@@ -412,6 +464,8 @@ module TableInputHandler
 
   def dispatch_table_input_key(key, focus_on_enter, context)
     case key
+    when 'A'
+      handle_table_select_all_visible(context)
     when '1', '2', '3', '4'
       handle_table_sorting(key)
     when 'up', 'down', 'j', 'k', 'J', 'K', 'g', 'G', 'd', 'u', 'home', 'end', 'page_up', 'page_down'
@@ -481,16 +535,19 @@ module TableInputHandler
     return false if cards_list.nil? || cards_list.empty?
     return false unless @selected_table_rows && @selected_table_rows.any?
 
-    # Save the state so Ctrl+Z can undo the entire bulk toggle.
+    # Resolve valid, unique cards before creating the snapshot.
+    selected_cards = @selected_table_rows.filter_map do |idx|
+      cards_list[idx]
+    end.uniq
+
+    return false if selected_cards.empty?
+
+    # One snapshot for the entire bulk toggle.
+    allow_snapshot! if respond_to?(:allow_snapshot!)
     save_history_snapshot if respond_to?(:save_history_snapshot)
 
-    # 🚨 PURE TOGGLE: Iterate over all checkmarks and invert each card's state.
-    @selected_table_rows.each do |idx|
-      card = cards_list[idx]
-      if card
-        # Invert the state: true becomes false, and false becomes true.
-        card.study = !card.study
-      end
+    selected_cards.each do |card|
+      card.study = !card.study
     end
 
     # Sla de library direct veilig op naar de harde schijf
@@ -512,6 +569,8 @@ module TableInputHandler
     deck = @library.subjects[s_idx]&.sources[src_idx]&.decks[d_idx]
     card = deck&.cards&.[](selected_row)
     return false unless card
+
+    allow_snapshot! if respond_to?(:allow_snapshot!)
 
     save_history_snapshot if respond_to?(:save_history_snapshot)
     card.study = !card.study
@@ -594,12 +653,25 @@ module TableInputHandler
 
   def handle_table_navigation(key, selected_row, number_of_rows, step, visible_height, has_shift, has_ctrl, has_alt,
                               focus_on_enter = nil)
-    key_data = build_table_navigation_context(key, selected_row, number_of_rows, visible_height, has_shift, has_ctrl,
-                                              has_alt)
+    key_data = build_table_navigation_context(
+      key, selected_row, number_of_rows, visible_height,
+      has_shift, has_ctrl, has_alt
+    )
     return false unless key_data
 
+    before_state = capture_selection_state
+
     target = calculate_table_navigation_target(key_data)
+
+    if target[:consumed]
+      record_selection_change(before_state)
+      return true
+    end
+
     apply_table_navigation_target(target, key_data)
+
+    record_selection_change(before_state)
+
     true
   end
 
@@ -878,6 +950,30 @@ module TableInputHandler
     @selected_table_rows = (first..last).to_a
   end
 
+  def handle_table_select_all_visible(context)
+    before_state = capture_selection_state
+
+    visible_rows =
+      if context[:has_active_search] && @search_matches
+        @search_matches.dup
+      else
+        (0...context[:number_of_rows].to_i).to_a
+      end
+
+    @selected_table_rows = visible_rows
+    @selection_anchor = visible_rows.first
+
+    unless visible_rows.empty?
+      @table_state.select(visible_rows.first) if @table_state
+      @current_card_idx = visible_rows.first
+    end
+
+    set_table_viewport_offset(0) if respond_to?(:set_table_viewport_offset)
+
+    record_selection_change(before_state)
+    true
+  end
+
   def handle_table_edit_card(context)
     cards_list = context[:cards_list]
     settings = AppConfig.settings
@@ -968,16 +1064,25 @@ module TableInputHandler
       return false # 🔒 Vertelt het codeblok om open te blijven via next false
     end
 
-    allow_snapshot! if respond_to?(:allow_snapshot!)
-    save_history_snapshot if respond_to?(:save_history_snapshot)
+    changes = {
+      term: edit_term_str,
+      context: edit_context_str,
+      meaning: edit_meaning_str
+    }.reject do |field, value|
+      selected_card.public_send(field).to_s == value
+    end
 
-    # Apply only populated required fields. An empty required field
-    # keeps its original value. Context may be empty.
-    selected_card.term = term_valid ? edit_term_str : selected_card.term.to_s
-    selected_card.context = edit_context_str
-    selected_card.meaning = meaning_valid ? edit_meaning_str : selected_card.meaning.to_s
+    unless changes.empty?
+      allow_snapshot! if respond_to?(:allow_snapshot!)
+      save_history_snapshot if respond_to?(:save_history_snapshot)
 
-    @library_dirty = true
+      changes.each do |field, value|
+        selected_card.public_send("#{field}=", value)
+      end
+
+      @library_dirty = true
+    end
+
     @active_focus = :table
     @last_focus = :table
     @table_state.select(selected_row)
@@ -1015,17 +1120,22 @@ module TableInputHandler
 
   def handle_multi_card_deletion(context)
     cards_list = context[:cards_list]
-    first_selected_idx = @selected_table_rows.min
+    valid_indices = @selected_table_rows.select do |idx|
+      idx.is_a?(Integer) && idx >= 0 && idx < cards_list.length
+    end
+
+    return false if valid_indices.empty?
+
+    first_selected_idx = valid_indices.min
     target_cursor_idx = [first_selected_idx - 1, 0].max
 
     allow_snapshot! if respond_to?(:allow_snapshot!)
     save_history_snapshot if respond_to?(:save_history_snapshot)
 
-    # 🟢 Delete the cards using the saved selection.
-    @selected_table_rows.sort.reverse_each { |idx| cards_list.delete_at(idx) if cards_list[idx] }
+    valid_indices.sort.reverse_each { |idx| cards_list.delete_at(idx) }
 
     @library_dirty = true
-    @selected_table_rows = [] # <- Pas HIER leegmaken na de bulk-verwijdering!
+    @selected_table_rows = []
 
     if cards_list.empty?
       @table_state.select(nil)
@@ -1033,22 +1143,28 @@ module TableInputHandler
       safe_idx = [target_cursor_idx, cards_list.length - 1].min
       @table_state.select(safe_idx)
     end
+
     execute_search(@last_search_query) if respond_to?(:execute_search) && @last_search_query
     wipe_all_search_artifacts if respond_to?(:wipe_all_search_artifacts)
     true
   end
 
   def handle_single_card_deletion(context)
-    wipe_all_search_artifacts if respond_to?(:wipe_all_search_artifacts)
     row = @table_state.selected if @table_state
     return false unless row
 
     cards_list = context[:cards_list]
+    return false unless row.is_a?(Integer) && row >= 0 && row < cards_list.length
+
+    wipe_all_search_artifacts if respond_to?(:wipe_all_search_artifacts)
+
     allow_snapshot! if respond_to?(:allow_snapshot!)
     save_history_snapshot if respond_to?(:save_history_snapshot)
+
     cards_list.delete_at(row)
     @library_dirty = true
     new_total_rows = cards_list.length
+
     if new_total_rows.zero?
       @table_state.select(nil)
     elsif row >= new_total_rows
@@ -1056,6 +1172,7 @@ module TableInputHandler
     else
       @table_state.select(row)
     end
+
     execute_search(@last_search_query) if respond_to?(:execute_search) && @last_search_query
     true
   end

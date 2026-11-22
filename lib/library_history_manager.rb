@@ -3,6 +3,18 @@ module LibraryHistoryManager
     @undo_stack = []
     @redo_stack = []
     @allow_next_snapshot = false
+    @history_action_stack = []
+    @history_redo_action_stack = []
+  end
+
+  def record_history_action(type)
+    @history_action_stack ||= []
+    @history_redo_action_stack ||= []
+
+    @history_action_stack << type
+    @history_redo_action_stack.clear
+
+    @redo_stack.clear if @redo_stack
   end
 
   def allow_snapshot!
@@ -14,26 +26,23 @@ module LibraryHistoryManager
     return unless @allow_next_snapshot
 
     @undo_stack << build_history_entry(target || current_history_target)
-    @redo_stack.clear
+    record_history_action(:data)
     @allow_next_snapshot = false
   end
 
   # =========================================================================
-  # 🔄 TRANSACTIONEEL HISTORY BEHEER (All-Decks Transactie Matrix)
-  # 👉 RESOLVED: Maakt gebruik van de ingebouwde library_snapshot om de complete
-  #    toestand van de database als één onscheidbare transactie te borgen!
+  # TRANSACTIONEEL HISTORY BEHEER
   # =========================================================================
   def save_global_transaction_snapshot(target = nil)
     return unless @library && @undo_stack
 
-    # We hergebruiken jouw loepzuivere, diepe library_snapshot!
     @undo_stack << {
       type: :global_replace_transaction,
-      snapshot: library_snapshot, # Ingebouwde deep-copy helper
+      snapshot: library_snapshot,
       target: target || { type: :global_replace }
     }
 
-    @redo_stack.clear if @redo_stack
+    record_history_action(:data)
     @allow_next_snapshot = false
   end
 
@@ -53,7 +62,8 @@ module LibraryHistoryManager
       restore_snapshot(entry[:snapshot])
     else
       # Reguliere single-deck undo flow
-      save_snapshot_to_stack(@redo_stack, target)
+      save_snapshot_to_stack(@redo_stack, entry[:redo_target] || target)
+      @redo_stack.last[:undo_target] = target if @redo_stack.any?
       restore_snapshot(entry[:snapshot])
       realign_after_history(target)
     end
@@ -75,7 +85,8 @@ module LibraryHistoryManager
       restore_snapshot(entry[:snapshot])
     else
       # Reguliere single-deck redo flow
-      save_snapshot_to_stack(@undo_stack, target)
+      save_snapshot_to_stack(@undo_stack, entry[:undo_target] || target)
+      @undo_stack.last[:redo_target] = target if @undo_stack.any?
       restore_snapshot(entry[:snapshot])
       realign_after_history(target)
     end
@@ -130,7 +141,9 @@ module LibraryHistoryManager
                     study: card.study,
                     term: card.term,
                     context: card.context,
-                    meaning: card.meaning
+                    meaning: card.meaning,
+                    interval: card.interval,
+                    next_review_at: card.next_review_at
                   }
                 end
               }
@@ -306,6 +319,8 @@ module LibraryHistoryManager
             card.id = card_hash[:id] || card.id
             card.study = card_hash[:study]
             card.study = card_hash[:memorised] if card_hash.key?(:memorised)
+            card.interval = card_hash[:interval] if card_hash.key?(:interval)
+            card.next_review_at = card_hash[:next_review_at] if card_hash.key?(:next_review_at)
             deck.cards << card
           end
           source.decks << deck

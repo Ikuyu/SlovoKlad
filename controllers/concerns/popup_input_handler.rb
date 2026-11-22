@@ -155,6 +155,7 @@ module PopupInputHandler
   end
 
   def process_search_replace_popup_submission(data, is_replace_trigger, origin_focus, remembered_tree_path)
+    settings = AppConfig.settings
     query_text = popup_field_text(data[:query])
     replace_text = is_replace_trigger ? popup_field_text(data[:replace]) : nil
 
@@ -172,16 +173,39 @@ module PopupInputHandler
     end
 
     is_case_checked = popup_case_sensitive_value(data[:case_sensitive])
+    is_regex_checked = popup_case_sensitive_value(data[:regex])
+    is_global_checked = popup_case_sensitive_value(data[:global])
 
-    if origin_focus == :tree
-      process_tree_search_replace_submission(query_text, replace_text, is_replace_trigger, is_case_checked,
-                                             origin_focus, remembered_tree_path)
-    else
-      process_table_search_replace_submission(query_text, replace_text, is_replace_trigger, is_case_checked)
+    @tree_regex_mode = is_regex_checked if origin_focus == :tree
+    @table_regex_mode = is_regex_checked if origin_focus != :tree
+
+    begin
+      if origin_focus == :tree
+        process_tree_search_replace_submission(
+          query_text, replace_text, is_replace_trigger, is_case_checked,
+          origin_focus, remembered_tree_path
+        )
+      else
+        process_table_search_replace_submission(
+          query_text, replace_text, is_replace_trigger, is_case_checked,
+          is_global_checked
+        )
+      end
+
+      sync_indices_from_tree_path if respond_to?(:sync_indices_from_tree_path)
+      @tree.refresh_nodes if @tree.respond_to?(:refresh_nodes)
+    rescue RegexpError => e
+      trigger_statusbar_message(
+        "#{settings.language_string(:statusbar_invalid_regex)}: #{e.message}",
+        type: :warning
+      )
+
+      @active_focus = :popup
+      @tree.selected_path = remembered_tree_path if origin_focus == :tree && remembered_tree_path
+      @tree.refresh_nodes if @tree.respond_to?(:refresh_nodes)
+
+      false
     end
-
-    sync_indices_from_tree_path if respond_to?(:sync_indices_from_tree_path)
-    @tree.refresh_nodes if @tree.respond_to?(:refresh_nodes)
   end
 
   def popup_field_text(field)
@@ -241,33 +265,37 @@ module PopupInputHandler
   end
 
   def build_tree_search_matches(query_text, is_case_checked)
-    # Gebruik de selectieve normalisatie op de query-string
-    search_str = if respond_to?(:normalize_target_scripts,
-                                true)
-                   normalize_target_scripts(query_text, is_case_checked)
-                 else
-                   query_text.to_s
-                 end
-    search_str = search_str.downcase unless is_case_checked
+    regex_mode = !!@tree_regex_mode
+
+    search_regex = if regex_mode
+                     flags = is_case_checked ? 0 : Regexp::IGNORECASE
+                     Regexp.new(query_text.to_s, flags)
+                   else
+                     search_str = normalize_target_scripts(query_text, is_case_checked)
+                     search_str = search_str.downcase unless is_case_checked
+                     nil
+                   end
 
     match_proc = lambda do |name_field|
-      # Gebruik de selectieve normalisatie op het mapveld
-      norm_field = if respond_to?(:normalize_target_scripts,
-                                  true)
-                     normalize_target_scripts(name_field, is_case_checked)
-                   else
-                     name_field.to_s
-                   end
-      norm_field = norm_field.downcase unless is_case_checked
-      norm_field.include?(search_str)
+      norm_field = normalize_target_scripts(name_field, is_case_checked)
+
+      if regex_mode
+        regex_text = norm_field.unicode_normalize(:nfd)
+        regex_text.match?(search_regex)
+      else
+        norm_field = norm_field.downcase unless is_case_checked
+        norm_field.include?(search_str)
+      end
     end
 
     @library.subjects.each do |sub|
       sub_path = [sub.id.to_s]
       @tree_search_matches << sub_path if match_proc.call(sub.name)
+
       sub.sources.each do |src|
         src_path = sub_path + [src.id.to_s]
         @tree_search_matches << src_path if match_proc.call(src.name)
+
         src.decks.each do |deck|
           deck_path = src_path + [deck.id.to_s]
           @tree_search_matches << deck_path if match_proc.call(deck.name)
@@ -317,12 +345,34 @@ module PopupInputHandler
     @interactively_replacing = false
   end
 
-  def process_table_search_replace_submission(query_text, replace_text, is_replace_trigger, is_case_checked)
+  def process_table_search_replace_submission(query_text, replace_text, is_replace_trigger, is_case_checked,
+                                              is_global_checked = false)
     @last_search_query = query_text
     @last_replace_text = replace_text if is_replace_trigger
     @table_case_sensitive = is_case_checked
     @search_matches = []
     @search_current_match_idx = 0
+
+    if is_global_checked && is_replace_trigger
+      @global_search_case_sensitive = is_case_checked
+      @global_search_regex_mode = !!@table_regex_mode
+
+      perform_global_search(
+        query_text,
+        case_sensitive: is_case_checked,
+        regex_mode: !!@table_regex_mode
+      )
+
+      if @global_search_matches.any?
+        @active_focus = :replace_mode
+        @last_focus = :table
+        @interactively_replacing = true
+        return
+      end
+
+      handle_table_search_no_result(true)
+      return
+    end
 
     cards_to_search = active_cards_for_search
     build_table_search_matches(cards_to_search, query_text, is_case_checked)
@@ -347,24 +397,23 @@ module PopupInputHandler
   end
 
   def build_table_search_matches(cards_to_search, query_text, is_case_checked)
-    # Compileer de script-ongevoelige reguliere expressie in NFD-vorm
-    search_regex = if respond_to?(:build_script_insensitive_regex,
-                                  true)
-                     build_script_insensitive_regex(query_text,
-                                                    is_case_checked)
+    regex_mode = !!@table_regex_mode
+
+    search_regex = if regex_mode
+                     flags = is_case_checked ? 0 : Regexp::IGNORECASE
+                     Regexp.new(query_text.to_s, flags)
                    else
-                     Regexp.new(Regexp.escape(query_text.to_s))
+                     build_script_insensitive_regex(query_text, is_case_checked)
                    end
 
     cards_to_search.each_with_index do |card, idx|
-      # Converteer de kaartvelden naar NFD om te zorgen dat de \p{M}* marks matchen
-      nfd_term    = card.term.to_s.unicode_normalize(:nfd)
+      nfd_term = card.term.to_s.unicode_normalize(:nfd)
       nfd_context = card.context.to_s.unicode_normalize(:nfd)
       nfd_meaning = card.meaning.to_s.unicode_normalize(:nfd)
 
-      match_found = nfd_term =~ search_regex ||
-                    nfd_context =~ search_regex ||
-                    nfd_meaning =~ search_regex
+      match_found = nfd_term.match?(search_regex) ||
+                    nfd_context.match?(search_regex) ||
+                    nfd_meaning.match?(search_regex)
 
       @search_matches << idx if match_found
     end
@@ -516,18 +565,20 @@ module PopupInputHandler
 
     tabs = {
       '1' => :help_main,
-      '2' => :help_main_screen,
-      '3' => :help_commands,
-      '4' => :help_library,
-      '5' => :help_deck,
-      '6' => :help_study,
-      '7' => :help_input_fields
+      '2' => :help_startup_screen,
+      '3' => :help_main_screen,
+      '4' => :help_commands,
+      '5' => :help_library,
+      '6' => :help_deck,
+      '7' => :help_study,
+      '8' => :help_input_fields
     }
     message_key = tabs[key_down]
     return false unless message_key
 
     title_key = {
       help_main: :help_main_title,
+      help_startup_screen: :help_startup_screen_title,
       help_main_screen: :help_main_screen_title,
       help_commands: :help_commands_title,
       help_library: :help_library_title,

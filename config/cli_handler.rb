@@ -11,7 +11,7 @@ module CliHandler
 
   def self.handle_arguments
     # Read metadata and build the options and parser outside the main procedure.
-    load_app_info
+    load_cli_app_info
     @options = default_options
     options = @options
 
@@ -119,6 +119,9 @@ module CliHandler
           #{@app_name} – TUI dashboard study aid
           Version #{@app_version}
 
+          Built with Ruby #{@ruby_version}
+          Powered by Ratatui Ruby #{@ratatui_ruby_version}
+
           Copyright (c) #{@app_copyright_year} Edwin H. Jonkvorst.
           All rights reserved.
         ABOUT
@@ -136,7 +139,7 @@ module CliHandler
         exit(0)
       end
 
-      opts.on('--skip-startup', 'Skip startup screen') do
+      opts.on('-s', '--skip-startup', 'Skip startup screen') do
         options[:skip_startup] = true
       end
 
@@ -781,7 +784,7 @@ module CliHandler
   end
 
   # Leest optionele applicatiemetadata en b उद्योग kogelvrij in module-instantievariabelen
-  private_class_method def self.load_app_info
+  private_class_method def self.load_cli_app_info
     app_info_path = File.join(__dir__, '..', 'app_info.yml')
 
     app_info = YAML.safe_load(
@@ -793,6 +796,9 @@ module CliHandler
     @app_name           = app_info.fetch('app_name')
     @app_version        = app_info.fetch('app_version')
     @app_copyright_year = app_info.fetch('app_copyright_year')
+
+    @ruby_version = RUBY_VERSION
+    @ratatui_ruby_version = Gem.loaded_specs.fetch('ratatui_ruby').version.to_s
 
     app_info
   end

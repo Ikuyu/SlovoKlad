@@ -15,10 +15,11 @@ class RatinFieldHistoryManager
   def save_state(text, cursor_index, force: false, visual_caret: nil)
     now = Time.now
 
-    # If the user is actively typing within the threshold, overwrite the temporary peak state
+    # Keep the first state of a continuous typing group.
+    # Only refresh the debounce timer for subsequent keystrokes.
     if !force && @last_snapshot_time && (now - @last_snapshot_time < @debounce_threshold)
-      # Update the very top item instead of pushing a brand new state
-      @undo_stack[-1] = { text: text.dup, cursor: cursor_index, visual_caret: visual_caret } unless @undo_stack.empty?
+      @redo_stack.clear
+      @last_snapshot_time = now
       return
     end
 
@@ -29,7 +30,7 @@ class RatinFieldHistoryManager
       @undo_stack.shift if @undo_stack.size > @max_depth
     end
 
-    @redo_stack.clear unless force && @redo_stack.any?
+    @redo_stack.clear
     # A forced snapshot closes the current typing debounce group.
     # The next edit must not overwrite a paste/cut undo boundary.
     @last_snapshot_time = force ? nil : now
@@ -37,6 +38,8 @@ class RatinFieldHistoryManager
 
   def execute_undo(current_text, current_cursor, visual_caret: nil)
     return nil if @undo_stack.empty?
+
+    @last_snapshot_time = nil
 
     # Als de bovenste toestand exact overeenkomt met wat er nu live op het scherm staat,
     # first move the current top state to the redo stack.
@@ -58,6 +61,8 @@ class RatinFieldHistoryManager
 
   def execute_redo(current_text, current_cursor, visual_caret: nil)
     return nil if @redo_stack.empty?
+
+    @last_snapshot_time = nil
 
     # If the current displayed text already matches the top undo state,
     # hoeven we hem niet dubbel op de stack te pushen.

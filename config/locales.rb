@@ -127,6 +127,7 @@ module AppTranslations
       hint: '⇥ Tab: Cycle Fields, ↵ Enter: OK, Esc: Cancel',
       statusbar_search_error: 'Search error',
       statusbar_replace_error: 'Replace error',
+      statusbar_invalid_regex: 'Invalid regular expression',
       search_title_table: 'Deck: search',
       search_title_tree: 'Library: search',
       search_and_replace_title_table: 'Deck: find and replace',
@@ -189,13 +190,14 @@ module AppTranslations
       study_test_completed_on_time: 'completed on time',
       study_test_time_up: 'time is up',
       help_main_title: 'Help',
+      help_startup_screen_title: 'Help: startup screen',
       help_main_screen_title: 'Help: main screen',
       help_commands_title: 'Help: commands',
       help_library_title: 'Help: library',
       help_deck_title: 'Help: deck',
       help_study_title: 'Help: study',
       help_input_fields_title: 'Help: input fields',
-      mail_subject: '%<app_name>s Support request',
+      mail_subject: '%<app_name>s support request',
       about_message: <<~TEXT,
         %<app_name>s
 
@@ -203,17 +205,27 @@ module AppTranslations
 
         Version %<app_version>s
 
+        Built with Ruby %<ruby_version>s
+        Powered by Ratatui Ruby %<ratatui_ruby_version>s
+
         Copyright (c) %<app_copyright_year>s Edwin H. Jonkvorst.
         All rights reserved.
       TEXT
       help_main: <<~TEXT,
         1 : This help menu
-        2 : Main screen
-        3 : Commands
-        4 : Library
-        5 : Deck
-        6 : Study
-        7 : Input fields
+        2 : Startup screen
+        3 : Main screen
+        4 : Commands
+        5 : Library
+        6 : Deck
+        7 : Study
+        8 : Input fields
+      TEXT
+      help_startup_screen: <<~TEXT,
+        F       : Next font
+        Shift+F : Previous font
+        T       : Next theme
+        Shift+T : Previous theme
       TEXT
       help_main_screen: <<~TEXT,
         ?       : Help
@@ -293,8 +305,9 @@ module AppTranslations
            Shift+M, Option+Space,
            Shift+Home, Shift+End,
            Shift+PageUp, Shift+PageDown : Mark items for bulk deletion
-        Option+Enter, A, +, F7          : Add item
-        Enter, Shift+R, F2              : Rename item
+        Enter                           : Enter table
+        A, +, F7                        : Add item
+        Shift+R, F2                     : Rename item
         Backspace, -, F8                : Delete item(s)
         =                               : Speak current term
         /, Control+F, F                 : Search
@@ -306,7 +319,8 @@ module AppTranslations
         M                               : Switch modus
         D                               : Remove duplicates from selected deck(s)
         R                               : Reset selected deck(s)
-        ⌥1 ⌥2 ⌥3 ⌥4                     : Start a study session with the selected deck
+        Option+1, Option+2, Option+3,
+        Option+4, Option+5              : Start a study session with the selected deck
       TEXT
       help_deck: <<~TEXT,
         Control+P, K, ↑                 : Row up
@@ -323,7 +337,7 @@ module AppTranslations
            Shift+Home, Shift+End,
            Shift+PageUp, Shift+PageDown : Mark cards for bulk deletion
         Space                           : (De)select card(s)
-        Option+Enter, A, +, F7          : Add card
+        A, +, F7                        : Add card
         Enter, E, F2                    : Edit card
         Backspace, -, F8                : Delete card(s)
         /, Control+F, F                 : Search
@@ -332,11 +346,12 @@ module AppTranslations
         Shift+N, Control+P, K, ↑        : Search previous
         Control+Z                       : Undo
         Control+Y, Control+Shift+Z      : Redo
-        1 2 3 4                         : Sort column
+        1, 2, 3, 4                      : Sort column
         M                               : Switch modus
         D                               : Remove duplicates from selected deck(s)
         R                               : Reset selected deck(s)
-        ⌥1 ⌥2 ⌥3 ⌥4                     : Start a study session
+        Option+1 Option+2 Option+3,
+        Option+4, Option+5              : Start a study session
       TEXT
       help_study: <<~TEXT,
         D = Drill
@@ -363,14 +378,14 @@ module AppTranslations
         S                              : Switch seconds timer (D)
         T                              : Toggle timer (D)
         Space, Enter                   : Show answer (D, Q)
-        1 2 3 4                        : Answer (MC)
+        1, 2, 3, 4                     : Answer (MC)
         Tab                            : Exclude card from future exercises (D, Q & MC) & show next card (Q & MC) | I don’t have that card (TK)
         F2                             : Edit card (D, Q, MC & PM) | Ask a card / Hand over a card (TK)
         =                              : Speak current term
       TEXT
       help_input_fields: <<~TEXT
         === EDITING ===
-           Control+X.                 : Cut the selected text and copy it to the system clipboard.
+           Control+X                  : Cut the selected text and copy it to the system clipboard.
            Control+Y, Control+Shift+Z : Redo (Control+Shift+Z doesn't work in all terminals).
            Control+Z                  : Undo.
            Control+T                  : Swap the character behind the insertion point with the character in front of the insertion point.
@@ -382,31 +397,31 @@ module AppTranslations
               Option+↑, Control+A : Move the insertion point to the beginning of the line.
            Fn+↓, Fn+→,
               Option+↓, Control+E : Move the insertion point to the end of the line.
-           Option+←               : Move the insertion point to the beginning of the previous word.
-           Option+→               : Move the insertion point to the end of the next word.
+           Option+F, Option+←     : Move the insertion point to the beginning of the previous word.
+           Option+B, Option+→     : Move the insertion point to the end of the next word.
            Control+L              : Centre the insertion point in the text.
            Tab, Control+P         : Next inputfield.
            Backtab, Control+N     : Previous inputfield.
 
         === REMOVING TEXT ===
-           Control+W, Option+Backspace : Delete the word to the left of the insertion point.
-           Fn+Option+Backspace         : Delete the word to the right of the insertion point.
-           Control+H, Backspace        : Delete the character to the left of the insertion point.
-           Control+D, Fn+Backspace     : Delete the character to the right of the insertion point.
-           Control+K                   : Delete text from the right of the insertion point to the end of the line.
-           Control+U                   : Delete text from the insertion point to the beginning of the line.
+           Control+W, Option+Backspace   : Delete the word to the left of the insertion point.
+           Option+D, Fn+Option+Backspace : Delete the word to the right of the insertion point.
+           Control+H, Backspace          : Delete the character to the left of the insertion point.
+           Control+D, Fn+Backspace       : Delete the character to the right of the insertion point.
+           Control+K                     : Delete text from the right of the insertion point to the end of the line.
+           Control+U                     : Delete text from the insertion point to the beginning of the line.
 
         === SELECTING TEXT ===
-           Control+A, Control+Shift+A : Select all text.
-           Control+Shift+F, Shift+→   : Extend text selection one character to the right.
-           Control+Shift+B, Shift+←   : Extend text selection one character to the left.
-           Option+Shift+←             : Extend text selection to the beginning of the current word, then to the beginning of the following word if pressed again.
-           Option+Shift+→             : Extend text selection to the end of the current word, then to the end of the following word if pressed again.
+           Control+Shift+A                : Select all text.
            Shift+↑, Fn+Shift+↑,
-              Option+Shift+↑          : Extend text selection to the beginning of the line.
+              Fn+Shift+←, Option+Shift+↑  : Extend text selection to the beginning of the line.
            Shift+↓, Fn+Shift+↓,
-              Option+Shift+↓          : Extend text selection to the end of the line.
-              Control+Shift+L         : Extend the text selection to the centre of the text.
+              Fn+Shift+→, Option+Shift+↓  : Extend text selection to the end of the line.
+           Control+Shift+F, Shift+→       : Extend text selection one character to the right.
+           Control+Shift+B, Shift+←       : Extend text selection one character to the left.
+           Option+Shift+F, Option+Shift+→ : Extend text selection to the end of the current word, then to the end of the following word if pressed again.
+           Option+Shift+B, Option+Shift+← : Extend text selection to the beginning of the current word, then to the beginning of the following word if pressed again.
+           Control+Shift+L                : Extend the text selection to the centre of the text.
       TEXT
     },
     nl: {
@@ -535,6 +550,7 @@ module AppTranslations
       hint: '⇥ Tab: Wissel veld, ↵ Enter: OK, Esc: Annuleren',
       statusbar_search_error: 'Fout bij zoeken',
       statusbar_replace_error: 'Fout bij vervangen',
+      statusbar_invalid_regex: 'Ongeldige reguliere expressie',
       search_title_table: 'Kaartenbak: zoeken',
       search_title_tree: 'Bibliotheek: zoeken',
       search_and_replace_title_table: 'Kaartenbak: zoeken en vervangen',
@@ -597,6 +613,7 @@ module AppTranslations
       study_test_completed_on_time: 'op tijd afgerond',
       study_test_time_up: 'de tijd is om',
       help_main_title: 'Help',
+      help_startup_screen_title: 'Help: opstartscherm',
       help_main_screen_title: 'Help: hoofdscherm',
       help_commands_title: "Help: commando's",
       help_library_title: 'Help: bibliotheek',
@@ -611,17 +628,27 @@ module AppTranslations
 
         Version %<app_version>s
 
+        Ontwikkeld met Ruby %<ruby_version>s
+        Gebruikt Ratatui Ruby %<ratatui_ruby_version>s
+
         Copyright (c) %<app_copyright_year>s Edwin H. Jonkvorst.
         Alle rechten voorbehouden.
       TEXT
       help_main: <<~TEXT,
         1 : Dit help menu
-        2 : Hoofdscherm
-        3 : Commando's
-        4 : Bibliotheek
-        5 : Kaartenbak
-        6 : Studeren
-        7 : Invoervelden
+        2 : Opstartscherm
+        3 : Hoofdscherm
+        4 : Commando's
+        5 : Bibliotheek
+        6 : Kaartenbak
+        7 : Studeren
+        8 : Invoervelden
+      TEXT
+      help_startup_screen: <<~TEXT,
+        F       : Volgend font
+        Shift+F : Vorig font
+        T       : Volgend thema
+        Shift+T : Vorig thema
       TEXT
       help_main_screen: <<~TEXT,
         ?       : Help
@@ -701,8 +728,9 @@ module AppTranslations
            Shift+M, Option+Space,
            Shift+Home, Shift+End,
            Shift+PageUp, Shift+PageDown : Markeer onderdelen voor bulk verwijdering
-        Option+Enter, A, +, F7          : Onderdeel toevoegen
-        Enter, Shift+R, F2              : Onderdeel hernoemen
+        Enter                           : Naar tabel
+        A, +, F7                        : Onderdeel toevoegen
+        Shift+R, F2                     : Onderdeel hernoemen
         Backspace, -, F8                : Onderde(e)l(en) verwijderen
         =                               : Spreek huidige term uit
         /, Control+F, F                 : Zoeken
@@ -714,7 +742,8 @@ module AppTranslations
         M                               : Wissel modus
         D                               : Dubbele kaarten uit geselecteerde kaartenbak(ken) verwijderen
         R                               : Geselecteerde kaartenbak(ken) resetten
-        ⌥1 ⌥2 ⌥3 ⌥4                     : Start een studiesessie met de geselecteerde kaartenbak
+        Option+1, Option+2, Option+3,
+        Option+4, Option+5              : Start een studiesessie met de geselecteerde kaartenbak
       TEXT
       help_deck: <<~TEXT,
         Control+P, K, ↑                 : Rij omhoog
@@ -731,7 +760,7 @@ module AppTranslations
            Shift+Home, Shift+End,
            Shift+PageUp, Shift+PageDown : Markeer kaarten voor bulk verwijdering
         Space                           : Kaart(en) (de)selecteren
-        Option+Enter, A, +, F7          : Kaart toevoegen
+        A, +, F7                        : Kaart toevoegen
         Enter, E, F2                    : Kaart wijzigen
         Backspace, -, F8                : Kaart(en) verwijderen
         /, Control+F, F                 : Zoeken
@@ -740,11 +769,12 @@ module AppTranslations
         Shift+N, Control+P, K, ↑        : Zoek vorige
         Control+Z                       : Herstel
         Control+Y, Control+Shift+Z      : Herstel ongedaan maken
-        1 2 3 4                         : Kolom sorteren
+        1, 2, 3, 4                      : Kolom sorteren
         M                               : Wissel modus
         D                               : Dubbele kaarten uit geselecteerde kaartenbak(ken) verwijderen
         R                               : Geselecteerde kaartenbak(ken) resetten
-        ⌥1 ⌥2 ⌥3 ⌥4                     : Start een studiesessie
+        Option+1, Option+2, Option+3,
+        Option+4, Option+5              : Start een studiesessie
       TEXT
       help_study: <<~TEXT,
         D = Stampen
@@ -771,7 +801,7 @@ module AppTranslations
         S                              : Wissel seconden timer (D)
         T                              : Zet timer aan/uit (D)
         Space, Enter                   : Toon antwoord (S, O)
-        1 2 3 4                        : Antwoord (MK)
+        1, 2, 3, 4                     : Antwoord (MK)
         Tab                            : Kaart uitsluiten van toekomstige oefeningen (S, O & MK) & toon volgende kaart (O & MK) | Die kaart heb ik niet (TK)
         F2                             : Kaart bewerken (S, O, MK & SM) | Kaart vragen / kaart afstaan (TK)
         =                              : Spreek huidige term uit
@@ -790,31 +820,31 @@ module AppTranslations
               Option+↑, Control+A : Verplaats de invoegpositie naar het begin van de regel.
            Fn+↓, Fn+→,
               Option+↓, Control+E : Verplaats de invoegpositie naar het einde van de regel.
-           Option+←               : Verplaats de invoegpositie naar het begin van het vorige woord.
-           Option+→               : Verplaats de invoegpositie naar het einde van het volgende woord.
+           Option+F, Option+→     : Verplaats de invoegpositie naar het einde van het volgende woord.
+           Option+B, Option+←     : Verplaats de invoegpositie naar het begin van het vorige woord.
            Control+L              : Plaats de invoegpositie in het midden van de tekst.
            Tab, Control+P         : Ga naar het volgende invoerveld.
            Backtab, Control+N     : Ga naar het vorige invoerveld.
 
         === TEKST VERWIJDEREN ===
-           Control+W, Option+Backspace : Verwijder het woord links van de invoegpositie.
-           Fn+Option+Backspace         : Verwijder het woord rechts van de invoegpositie.
-           Control+H, Backspace        : Verwijder het teken links van de invoegpositie.
-           Control+D, Fn+Backspace     : Verwijder het teken rechts van de invoegpositie.
-           Control+K                   : Verwijder de tekst vanaf de invoegpositie tot het einde van de regel.
-           Control+U                   : Verwijder de tekst vanaf de invoegpositie tot het begin van de regel.
+           Control+W, Option+Backspace   : Verwijder het woord links van de invoegpositie.
+           Option+D, Fn+Option+Backspace : Verwijder het woord rechts van de invoegpositie.
+           Control+H, Backspace          : Verwijder het teken links van de invoegpositie.
+           Control+D, Fn+Backspace       : Verwijder het teken rechts van de invoegpositie.
+           Control+K                     : Verwijder de tekst vanaf de invoegpositie tot het einde van de regel.
+           Control+U                     : Verwijder de tekst vanaf de invoegpositie tot het begin van de regel.
 
         === TEKST SELECTEREN ===
-           Control+A, Control+Shift+A : Selecteer alle tekst.
-           Control+Shift+F, Shift+→   : Breid de selectie één teken naar rechts uit.
-           Control+Shift+B, Shift+←   : Breid de selectie één teken naar links uit.
-           Option+Shift+←             : Breid de selectie uit tot het begin van het huidige woord. Druk opnieuw om uit te breiden tot het begin van het volgende woord.
-           Option+Shift+→             : Breid de selectie uit tot het einde van het huidige woord. Druk opnieuw om uit te breiden tot het einde van het volgende woord.
+           Control+Shift+A                : Selecteer alle tekst.
            Shift+↑, Fn+Shift+↑,
-              Option+Shift+↑          : Breid de selectie uit tot het begin van de regel.
+              Fn+Shift+←, Option+Shift+↑  : Breid de selectie uit tot het begin van de regel.
            Shift+↓, Fn+Shift+↓,
-              Option+Shift+↓          : Breid de selectie uit tot het einde van de regel.
-              Control+Shift+L         : Breid de tekstselectie uit tot het midden van de tekst.
+              Fn+Shift+→, Option+Shift+↓  : Breid de selectie uit tot het einde van de regel.
+           Control+Shift+F, Shift+→       : Breid de selectie één teken naar rechts uit.
+           Control+Shift+B, Shift+←       : Breid de selectie één teken naar links uit.
+           Option+Shift+F, Option+Shift+→ : Breid de selectie uit tot het einde van het huidige woord. Druk opnieuw om uit te breiden tot het einde van het volgende woord.
+           Option+Shift+B, Option+Shift+← : Breid de selectie uit tot het begin van het huidige woord. Druk opnieuw om uit te breiden tot het begin van het volgende woord.
+           Control+Shift+L                : Breid de selectie uit tot het midden van de tekst.
       TEXT
     }
   }.freeze

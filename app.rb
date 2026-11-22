@@ -65,7 +65,7 @@ class RatatuiRubyApp
     settings = AppConfig.settings
     initialize_corrupt_settings_warning(settings.load)
 
-    load_app_info
+    load_tui_app_info
 
     @library = load_library
     initialize_empty_library if @library.subjects.nil? || @library.subjects.empty?
@@ -174,7 +174,7 @@ class RatatuiRubyApp
     end
   end
 
-  def load_app_info
+  def load_tui_app_info
     app_info_path = File.join(__dir__, 'app_info.yml')
 
     app_info = YAML.safe_load(

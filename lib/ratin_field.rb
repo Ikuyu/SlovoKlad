@@ -133,6 +133,7 @@ class RatinField
   end
 
   def clear
+    @history.clear
     clear_visual_caret_position!
     @text = ''
     @placeholder = @default_placeholder
@@ -445,8 +446,22 @@ class RatinField
     return if clean_paste.empty?
     return unless replacement_fits_max_length?(clean_paste)
 
-    @history.save_state(@text, @cursor_index, force: true, visual_caret: current_visual_caret_position_index)
+    ranges = selection_ranges
+    resulting_text = @text.dup
+
+    ranges.sort_by(&:first).reverse_each do |start_index, end_index|
+      resulting_text[start_index...end_index] = ''
+    end
+
+    insertion_index = ranges.empty? ? @cursor_index : ranges.map(&:first).min
+    resulting_text.insert(insertion_index, clean_paste)
+
+    return if resulting_text == @text
+
+    @history.save_state(@text, @cursor_index, force: true,
+                                              visual_caret: current_visual_caret_position_index)
     delete_selection(record_history: false)
+
     @placeholder = '' if @text.empty?
 
     insert_text_at_cursor(clean_paste)
@@ -714,6 +729,18 @@ class RatinField
       system_clipboard = ClipboardManager.paste.to_s
       unless system_clipboard.empty?
         return true unless replacement_fits_max_length?(system_clipboard)
+
+        ranges = selection_ranges
+        resulting_text = @text.dup
+
+        ranges.sort_by(&:first).reverse_each do |start_index, end_index|
+          resulting_text[start_index...end_index] = ''
+        end
+
+        insertion_index = ranges.empty? ? @cursor_index : ranges.map(&:first).min
+        resulting_text.insert(insertion_index, system_clipboard)
+
+        return true if resulting_text == @text
 
         if @history
           @history.save_state(@text, @cursor_index, force: true,
@@ -996,14 +1023,13 @@ class RatinField
 
     return false unless is_backspace || is_ctrl_w
 
-    if @history && @history.respond_to?(:save_state)
-      @history.save_state(@text, @cursor_index,
-                          visual_caret: current_visual_caret_position_index)
-    end
-
     if is_ctrl_w || mods.include?('alt') || mods.include?('meta')
       word_cursor_index = is_ctrl_w ? visual_editing_insertion_index : @cursor_index
       if word_cursor_index > 0
+        if @history
+          @history.save_state(@text, @cursor_index,
+                              visual_caret: current_visual_caret_position_index)
+        end
         normalize_cursor_and_selection!
         left_part = @text[0...word_cursor_index]
 
@@ -1579,6 +1605,7 @@ class RatinField
   private :restore_history_state
 
   def text=(value)
+    @history.clear
     clear_visual_caret_position!
     @text = value.to_s
 

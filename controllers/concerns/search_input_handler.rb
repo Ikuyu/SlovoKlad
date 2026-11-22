@@ -477,11 +477,6 @@ module SearchInputHandler
   def execute_global_replace_all(query_text, replace_text, case_sensitive: false, regex_mode: false)
     return if query_text.to_s.strip.empty?
 
-    # 🎯 1. DE TRANSACTIE-GRENDEL:
-    # Sla de complete library-state op als één onscheidbare Undo-stap!
-    save_global_transaction_snapshot if respond_to?(:save_global_transaction_snapshot, true)
-
-    # Compile the accent-insulated search expression
     search_regex = if regex_mode
                      flags = case_sensitive ? 0 : Regexp::IGNORECASE
                      Regexp.new(query_text.to_s, flags)
@@ -489,7 +484,9 @@ module SearchInputHandler
                      build_script_insensitive_regex(query_text, case_sensitive)
                    end
 
-    # 2. Perform replacement across all decks
+    snapshot_saved = false
+    changes_made = false
+
     @library.subjects.each do |sub|
       sub.sources.each do |src|
         src.decks.each do |deck|
@@ -497,32 +494,36 @@ module SearchInputHandler
             %i[term context meaning].each do |field|
               original_text = card.public_send(field).to_s
 
-              if regex_mode
-                # Regex mode: search and replace the original text.
-                updated_text = original_text.gsub(search_regex, replace_text)
-              else
-                # Normal mode: use NFD for script-insensitive matching,
-                # then restore NFC for stored text.
-                normalized_text = original_text.unicode_normalize(:nfd)
-                updated_text = normalized_text.gsub(search_regex, replace_text)
-                                              .unicode_normalize(:nfc)
+              updated_text = if regex_mode
+                               original_text.gsub(search_regex, replace_text)
+                             else
+                               original_text.unicode_normalize(:nfd)
+                                            .gsub(search_regex, replace_text)
+                                            .unicode_normalize(:nfc)
+                             end
+
+              next if updated_text == original_text
+
+              unless snapshot_saved
+                save_global_transaction_snapshot if respond_to?(:save_global_transaction_snapshot, true)
+                snapshot_saved = true
               end
 
-              card.public_send("#{field}=", updated_text) if updated_text != original_text
+              card.public_send("#{field}=", updated_text)
+              changes_made = true
             end
           end
         end
       end
     end
 
-    @library_dirty = true
+    @library_dirty = true if changes_made
 
     @interactively_replacing = false
     @replace_action_performed = false
     @active_focus = :table
-    @last_focus   = :table
+    @last_focus = :table
 
-    # Wis de actieve highlights en de zoekopdracht, want alles is zojuist vervangen!
     if respond_to?(:wipe_all_search_artifacts, true)
       wipe_all_search_artifacts
     else
@@ -533,9 +534,23 @@ module SearchInputHandler
       @search_matches = nil
     end
 
-    # Synchroniseer de interface
     sync_indices_from_tree_path if respond_to?(:sync_indices_from_tree_path)
     @tree.refresh_nodes if @tree.respond_to?(:refresh_nodes)
+  end
+
+  def execute_global_replace_all_decks
+    return false unless @global_search_active
+    return false if @global_search_matches.nil? || @global_search_matches.empty?
+    return false if @last_replace_text.nil?
+
+    execute_global_replace_all(
+      @global_search_query,
+      @last_replace_text,
+      case_sensitive: !!@global_search_case_sensitive,
+      regex_mode: !!@global_search_regex_mode
+    )
+
+    true
   end
 
   def build_search_match_navigation(key, shift_override)
@@ -616,65 +631,109 @@ module SearchInputHandler
     true
   end
 
-  def execute_global_replace_all_decks
-    # Get the active query and replacement text
-    effective_query = @global_search_query.to_s.strip
-    effective_replace = @last_replace_text.to_s
+  def handle_all_interactive_replace(is_tree_mode)
+    is_strict = is_tree_mode ? @tree_case_sensitive : @table_case_sensitive
+    raw_query = is_tree_mode ? @last_tree_search_query : @last_search_query
+    return false if raw_query.to_s.empty?
 
-    return if effective_query.empty?
+    regex_mode = is_tree_mode ? !!@tree_regex_mode : !!@table_regex_mode
 
-    is_strict = (@table_case_sensitive == true)
-
-    search_regex = build_script_insensitive_regex(
-      effective_query,
-      is_strict
-    )
-
-    # Transaction snapshot for Undo
-    save_global_transaction_snapshot if respond_to?(:save_global_transaction_snapshot, true)
-
-    # Replace across every deck
-    @library.subjects.each do |sub|
-      sub.sources.each do |src|
-        src.decks.each do |deck|
-          Array(deck.cards).each do |card|
-            %i[term context meaning].each do |field|
-              original_text = card.public_send(field).to_s
-              normalized_text = original_text.unicode_normalize(:nfd)
-
-              updated_text = normalized_text
-                             .gsub(search_regex, effective_replace)
-                             .unicode_normalize(:nfc)
-
-              card.public_send("#{field}=", updated_text) if updated_text != original_text
+    regex = if regex_mode
+              flags = is_strict ? 0 : Regexp::IGNORECASE
+              Regexp.new(raw_query.to_s, flags)
+            else
+              build_script_insensitive_regex(raw_query, is_strict)
             end
+
+    safe_replace_str =
+      if defined?(@last_replace_text) && @last_replace_text &&
+         !@last_replace_text.to_s.strip.empty?
+        @last_replace_text.to_s
+      else
+        ''
+      end
+
+    changes_made = false
+
+    replace_field = lambda do |object, field|
+      original_text = object.public_send(field).to_s
+      normalized_text = original_text.unicode_normalize(:nfd)
+      updated_text = normalized_text.gsub(regex, safe_replace_str)
+                                    .unicode_normalize(:nfc)
+
+      next if updated_text == original_text
+
+      unless changes_made
+        allow_snapshot! if respond_to?(:allow_snapshot!)
+        save_history_snapshot if respond_to?(:save_history_snapshot)
+      end
+
+      object.public_send("#{field}=", updated_text)
+      changes_made = true
+    end
+
+    if is_tree_mode
+      if @tree_search_matches && @tree_search_matches.any?
+        @tree_search_matches.each do |path|
+          next unless path.is_a?(Array)
+
+          case path.length
+          when 1
+            obj = @library.subjects.find { |s| s.id.to_s == path[0].to_s }
+            replace_field.call(obj, :name) if obj
+          when 2
+            sub = @library.subjects.find { |s| s.id.to_s == path[0].to_s }
+            obj = sub&.sources&.find { |src| src.id.to_s == path[1].to_s }
+            replace_field.call(obj, :name) if obj
+          when 3
+            sub = @library.subjects.find { |s| s.id.to_s == path[0].to_s }
+            src = sub&.sources&.find { |src| src.id.to_s == path[1].to_s }
+            obj = src&.decks&.find { |d| d.id.to_s == path[2].to_s }
+            replace_field.call(obj, :name) if obj
           end
         end
       end
-    end
 
-    @library_dirty = true
+      @tree_search_matches = nil
+      @tree_search_current_idx = nil
+      @last_replace_text = nil
+      @active_focus = :tree
+      @last_focus = :tree
 
-    # Clear replacement state
-    @interactively_replacing = false
-    @replace_action_performed = false
-    @active_focus = :table
-    @last_focus = :table
-
-    # Clear search highlights and markers
-    if respond_to?(:wipe_all_search_artifacts, true)
-      wipe_all_search_artifacts
+      sort_library_tree_layers! if changes_made && respond_to?(:sort_library_tree_layers!)
     else
-      @global_search_active = false
-      @global_search_query = nil
-      @global_search_matches = []
-      @global_search_matched_deck_ids = []
+      s_idx = @current_subject_idx || 0
+      src_idx = @current_source_idx || 0
+      d_idx = @current_deck_idx || 0
+
+      target_deck = @library.subjects[s_idx]&.sources&.[](src_idx)&.decks&.[](d_idx)
+      cards_list = target_deck ? target_deck.cards : []
+
+      if @search_matches && @search_matches.any?
+        @search_matches.each do |current_card_idx|
+          card = cards_list[current_card_idx]
+          next unless card
+
+          %i[term context meaning].each do |field|
+            replace_field.call(card, field)
+          end
+        end
+      end
+
       @search_matches = nil
+      @search_current_match_idx = nil
+      @last_search_query = nil
+      @last_replace_text = nil
+      @active_focus = :table
+      @last_focus = :table
     end
 
-    # Refresh the interface
-    sync_indices_from_tree_path if respond_to?(:sync_indices_from_tree_path)
+    @interactively_replacing = false
+    @library_dirty = true if changes_made
     @tree.refresh_nodes if @tree.respond_to?(:refresh_nodes)
+    sync_indices_from_tree_path if respond_to?(:sync_indices_from_tree_path)
+
+    true
   end
 
   def handle_interactive_replace_mode(key, has_shift, modifiers = [])
@@ -702,14 +761,19 @@ module SearchInputHandler
   end
 
   def handle_single_interactive_replace(is_tree_mode)
-    allow_snapshot! if respond_to?(:allow_snapshot!)
-    save_history_snapshot if respond_to?(:save_history_snapshot)
-
     is_strict = is_tree_mode ? @tree_case_sensitive : @table_case_sensitive
     raw_query = is_tree_mode ? @last_tree_search_query : @last_search_query
     return false if raw_query.to_s.empty?
 
-    regex = build_script_insensitive_regex(raw_query, is_strict)
+    regex_mode = is_tree_mode ? !!@tree_regex_mode : !!@table_regex_mode
+
+    regex = if regex_mode
+              flags = is_strict ? 0 : Regexp::IGNORECASE
+              Regexp.new(raw_query.to_s, flags)
+            else
+              build_script_insensitive_regex(raw_query, is_strict)
+            end
+
     safe_replace_str =
       if defined?(@last_replace_text) && @last_replace_text &&
          !@last_replace_text.to_s.strip.empty?
@@ -718,14 +782,23 @@ module SearchInputHandler
         ''
       end
 
-    # Replace a field only when its value actually changes.
+    changes_made = false
+
     replace_field = lambda do |object, field|
       original_text = object.public_send(field).to_s
       normalized_text = original_text.unicode_normalize(:nfd)
       updated_text = normalized_text.gsub(regex, safe_replace_str)
                                     .unicode_normalize(:nfc)
 
-      object.public_send("#{field}=", updated_text) if updated_text != original_text
+      next if updated_text == original_text
+
+      unless changes_made
+        allow_snapshot! if respond_to?(:allow_snapshot!)
+        save_history_snapshot if respond_to?(:save_history_snapshot)
+      end
+
+      object.public_send("#{field}=", updated_text)
+      changes_made = true
     end
 
     if is_tree_mode
@@ -742,12 +815,12 @@ module SearchInputHandler
           replace_field.call(obj, :name) if obj
         when 3
           sub = @library.subjects.find { |s| s.id.to_s == current_path[0].to_s }
-          src = sub&.sources&.find { |src| src.id.to_s == current_path[1].to_s }
+          src = sub&.sources&.find { |s| s.id.to_s == current_path[1].to_s }
           obj = src&.decks&.find { |d| d.id.to_s == current_path[2].to_s }
           replace_field.call(obj, :name) if obj
         end
 
-        sort_library_tree_layers! if respond_to?(:sort_library_tree_layers!)
+        sort_library_tree_layers! if changes_made && respond_to?(:sort_library_tree_layers!)
       end
 
       @tree_search_matches.delete_at(@tree_search_current_idx)
@@ -772,7 +845,7 @@ module SearchInputHandler
       @search_matches.delete_at(@search_current_match_idx)
     end
 
-    @library_dirty = true
+    @library_dirty = true if changes_made
 
     if is_tree_mode
       if @tree_search_matches && @tree_search_matches.any?
@@ -825,98 +898,6 @@ module SearchInputHandler
     end
 
     @tree.refresh_nodes if @tree.respond_to?(:refresh_nodes)
-    true
-  end
-
-  def handle_all_interactive_replace(is_tree_mode)
-    allow_snapshot! if respond_to?(:allow_snapshot!)
-    save_history_snapshot if respond_to?(:save_history_snapshot)
-
-    is_strict = is_tree_mode ? @tree_case_sensitive : @table_case_sensitive
-    raw_query = is_tree_mode ? @last_tree_search_query : @last_search_query
-    return false if raw_query.to_s.empty?
-
-    regex = build_script_insensitive_regex(raw_query, is_strict)
-
-    safe_replace_str =
-      if defined?(@last_replace_text) && @last_replace_text &&
-         !@last_replace_text.to_s.strip.empty?
-        @last_replace_text.to_s
-      else
-        ''
-      end
-
-    # Normalize, replace, and restore NFC only when the value changes.
-    replace_field = lambda do |object, field|
-      original_text = object.public_send(field).to_s
-      normalized_text = original_text.unicode_normalize(:nfd)
-      updated_text = normalized_text.gsub(regex, safe_replace_str)
-                                    .unicode_normalize(:nfc)
-
-      object.public_send("#{field}=", updated_text) if updated_text != original_text
-    end
-
-    if is_tree_mode
-      if @tree_search_matches && @tree_search_matches.any?
-        @tree_search_matches.each do |path|
-          next unless path.is_a?(Array)
-
-          case path.length
-          when 1
-            obj = @library.subjects.find { |s| s.id.to_s == path[0].to_s }
-            replace_field.call(obj, :name) if obj
-          when 2
-            sub = @library.subjects.find { |s| s.id.to_s == path[0].to_s }
-            obj = sub&.sources&.find { |src| src.id.to_s == path[1].to_s }
-            replace_field.call(obj, :name) if obj
-          when 3
-            sub = @library.subjects.find { |s| s.id.to_s == path[0].to_s }
-            src = sub&.sources&.find { |src| src.id.to_s == path[1].to_s }
-            obj = src&.decks&.find { |d| d.id.to_s == path[2].to_s }
-            replace_field.call(obj, :name) if obj
-          end
-        end
-      end
-
-      @tree_search_matches = nil
-      @tree_search_current_idx = nil
-      @last_replace_text = nil
-      @active_focus = :tree
-      @last_focus = :tree
-
-      sort_library_tree_layers! if respond_to?(:sort_library_tree_layers!)
-    else
-      s_idx = @current_subject_idx || 0
-      src_idx = @current_source_idx || 0
-      d_idx = @current_deck_idx || 0
-
-      target_deck = @library.subjects[s_idx]&.sources&.[](src_idx)&.decks&.[](d_idx)
-      cards_list = target_deck ? target_deck.cards : []
-
-      if @search_matches && @search_matches.any?
-        @search_matches.each do |current_card_idx|
-          card = cards_list[current_card_idx]
-          next unless card
-
-          %i[term context meaning].each do |field|
-            replace_field.call(card, field)
-          end
-        end
-      end
-
-      @search_matches = nil
-      @search_current_match_idx = nil
-      @last_search_query = nil
-      @last_replace_text = nil
-      @active_focus = :table
-      @last_focus = :table
-    end
-
-    @interactively_replacing = false
-    @library_dirty = true
-    @tree.refresh_nodes if @tree.respond_to?(:refresh_nodes)
-    sync_indices_from_tree_path if respond_to?(:sync_indices_from_tree_path)
-
     true
   end
 

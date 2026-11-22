@@ -55,6 +55,7 @@ module TreeInputHandler
     is_pure_alt_space = (key.to_s == ' ' && has_alt) || (key.to_s.bytes == [32] && has_alt)
 
     if is_pure_alt_space
+      before_state = capture_selection_state
       current_node = if defined?(@tree_state) && @tree_state && @tree.respond_to?(:visible_nodes)
                        @tree.visible_nodes[@tree_state.selected]
                      end
@@ -74,6 +75,9 @@ module TreeInputHandler
         @tree.refresh_nodes if @tree.respond_to?(:refresh_nodes)
         sync_indices_from_tree_path if respond_to?(:sync_indices_from_tree_path)
       end
+
+      record_selection_change(before_state)
+
       return true # Consumeer het event direct en voorkom doorlekken!
     end
 
@@ -97,6 +101,18 @@ module TreeInputHandler
     raw_key = key.to_s.strip.sub(/\A:/, '')
     key_down = raw_key.downcase
 
+    if @active_focus == :tree && has_ctrl && has_shift && key_down == 'a'
+      before_state = capture_selection_state
+      visible_nodes = @tree.respond_to?(:visible_nodes) ? @tree.visible_nodes : []
+      @selected_tree_paths = visible_nodes.filter_map { |n| n[:path] }.uniq
+      reset_tree_shift_selection
+      @tree.refresh_nodes if @tree.respond_to?(:refresh_nodes)
+      sync_indices_from_tree_path if respond_to?(:sync_indices_from_tree_path)
+      record_selection_change(before_state)
+
+      return true
+    end
+
     # Named keys are case-insensitive:
     # :end, "End", and "END" all become "end".
     # Preserve the case of letter keys because "G" and "g", and "K" and "k",
@@ -109,15 +125,9 @@ module TreeInputHandler
 
     if has_ctrl
       allowed_tree_ctrl_keys = %w[u d f h z y n p a]
-      unless allowed_tree_ctrl_keys.include?(key_down)
-        return false # Slik de toets NIET in, laat hem los / doe niks
-      end
+      return false unless allowed_tree_ctrl_keys.include?(key_down)
 
-      # 🟢 ALIAS FIX: Route ctrl+a directly to the existing 'K'/'J' or Shift branches.
-      if key_str == 'a'
-        key_str = 'A'
-        has_shift = true
-      end
+      return true if key_down == 'a' && !has_shift
     end
 
     return true if trigger_search_replace_popups(key, has_ctrl, has_alt, has_shift)
@@ -134,18 +144,13 @@ module TreeInputHandler
 
     case key_str
 
-    when 'A'
-      visible_nodes = @tree.respond_to?(:visible_nodes) ? @tree.visible_nodes : []
-      @selected_tree_paths = visible_nodes.filter_map { |n| n[:path] }.uniq
-      reset_tree_shift_selection
-      @tree.refresh_nodes if @tree.respond_to?(:refresh_nodes)
-      return true
-
     # =========================================================================
     # VERTICAL NAVIGATION & BOUNDARY JUMPS (INDEX MAPPING)
     # =========================================================================
     when 'down', 'j'
       was_page_navigation_active = @tree_page_navigation_active
+      before_state = capture_selection_state
+
       unless has_shift
         @selected_tree_paths = []
         reset_tree_shift_selection
@@ -187,10 +192,14 @@ module TreeInputHandler
       end
 
       sync_indices_from_tree_path if respond_to?(:sync_indices_from_tree_path)
+      record_selection_change(before_state)
+
       return true
 
     when 'up', 'k'
       was_page_navigation_active = @tree_page_navigation_active
+      before_state = capture_selection_state
+
       unless has_shift
         @selected_tree_paths = []
         reset_tree_shift_selection
@@ -231,9 +240,12 @@ module TreeInputHandler
       end
 
       sync_indices_from_tree_path if respond_to?(:sync_indices_from_tree_path)
+      record_selection_change(before_state)
+
       return true
 
     when 'M'
+      before_state = capture_selection_state
       if current_path
         if @selected_tree_paths.include?(current_path)
           @selected_tree_paths.delete(current_path)
@@ -244,11 +256,14 @@ module TreeInputHandler
 
         # Synchronize the data axis immediately.
         sync_indices_from_tree_path if respond_to?(:sync_indices_from_tree_path)
+        record_selection_change(before_state)
+
         return true
       end
 
       # 2. Extend the multi-selection upward with uppercase K.
     when 'K', 'J'
+      before_state = capture_selection_state
       visible_nodes = @tree.respond_to?(:visible_nodes) ? @tree.visible_nodes : []
       return true if visible_nodes.nil? || visible_nodes.empty?
 
@@ -279,10 +294,13 @@ module TreeInputHandler
       end
       @tree.refresh_nodes if @tree.respond_to?(:refresh_nodes)
       sync_indices_from_tree_path if respond_to?(:sync_indices_from_tree_path)
+      record_selection_change(before_state)
+
       return true
 
     # home & shift+home
     when 'home', 'g'
+      before_state = capture_selection_state
       if @tree.respond_to?(:visible_nodes) && @tree.visible_nodes && @tree.visible_nodes.any?
         visible_nodes = @tree.visible_nodes
         start_idx = @tree_state.selected || 0
@@ -311,10 +329,13 @@ module TreeInputHandler
       set_tree_page_offset(0)
       @tree_viewport_render_lock = 0
       sync_indices_from_tree_path if respond_to?(:sync_indices_from_tree_path)
+      record_selection_change(before_state)
+
       return true
 
     # end & shift+end
     when 'end', 'G'
+      before_state = capture_selection_state
       if @tree.respond_to?(:visible_nodes) && @tree.visible_nodes && @tree.visible_nodes.any?
         visible_nodes = @tree.visible_nodes
         start_idx = @tree_state.selected || 0
@@ -351,6 +372,8 @@ module TreeInputHandler
       @tree_page_viewport_start = max_offset
       @tree_viewport_render_lock = max_offset
       sync_indices_from_tree_path if respond_to?(:sync_indices_from_tree_path)
+      record_selection_change(before_state)
+
       return true
 
     when 'page_up', 'pageup', 'u', 'page_down', 'pagedown', 'd'
@@ -402,15 +425,12 @@ module TreeInputHandler
     # =========================================================================
     when 'enter', 'Enter', "\r", "\n"
       wipe_all_search_artifacts
+      sync_indices_from_tree_path if respond_to?(:sync_indices_from_tree_path)
 
-      if current_node
-        if has_alt
-          execute_tree_add(current_node)
-        else
-          trigger_rename_popup(key_str, current_node)
-        end
-      end
-      return true # Consumeer het enter-event volledig om doorlekken te blokkeren!
+      @last_focus = :tree
+      @active_focus = :table
+
+      return true
 
     when 'R', 'f2'
       wipe_all_search_artifacts
@@ -511,12 +531,10 @@ module TreeInputHandler
         new_deck = deck_class.new
         new_deck.name = lbl_deck.to_s.dup # Forceer een schone string-kopie
         new_deck.cards = []
-        new_deck.id = rand(100_000..999_999) if new_deck.respond_to?(:id=)
 
         new_src = source_class.new
         new_src.name = lbl_source.to_s.dup
         new_src.decks = [new_deck]
-        new_src.id = rand(100_000..999_999) if new_src.respond_to?(:id=)
 
         sub.sources = [new_src]
       else
@@ -526,7 +544,6 @@ module TreeInputHandler
           new_deck = deck_class.new
           new_deck.name = lbl_deck.to_s.dup
           new_deck.cards = []
-          new_deck.id = rand(100_000..999_999) if new_deck.respond_to?(:id=)
 
           src.decks = [new_deck]
         end
@@ -538,17 +555,14 @@ module TreeInputHandler
     new_deck = deck_class.new
     new_deck.name = lbl_deck.to_s.dup
     new_deck.cards = []
-    new_deck.id = rand(100_000..999_999) if new_deck.respond_to?(:id=)
 
     new_src = source_class.new
     new_src.name = lbl_source.to_s.dup
     new_src.decks = [new_deck]
-    new_src.id = rand(100_000..999_999) if new_src.respond_to?(:id=)
 
     new_sub = subject_class.new
     new_sub.name = lbl_subject.to_s.dup
     new_sub.sources = [new_src]
-    new_sub.id = rand(100_000..999_999) if new_sub.respond_to?(:id=)
 
     @library.subjects << new_sub
   end
@@ -590,7 +604,7 @@ module TreeInputHandler
           fallback_deck = blueprint_deck ? blueprint_deck.dup : deck_class.new
           fallback_deck.name = lbl_deck.to_s
           fallback_deck.cards = [] if fallback_deck.respond_to?(:cards=)
-          fallback_deck.id = rand(100_000..999_999) if fallback_deck.respond_to?(:id=)
+          fallback_deck.id = SecureRandom.uuid if fallback_deck.respond_to?(:id=)
           src.decks << fallback_deck
           if target_rescue_path.nil? && sub.respond_to?(:id) && src.respond_to?(:id)
             target_rescue_path = [sub.id.to_s, src.id.to_s, fallback_deck.id.to_s]
@@ -626,7 +640,7 @@ module TreeInputHandler
             fallback_deck = blueprint_deck ? blueprint_deck.dup : deck_class.new
             fallback_deck.name = lbl_deck
             fallback_deck.cards = []
-            fallback_deck.id = rand(100_000..999_999) if fallback_deck.respond_to?(:id=)
+            fallback_deck.id = SecureRandom.uuid if fallback_deck.respond_to?(:id=)
             parent_src.decks << fallback_deck
 
             # Construct the direct path to this new fallback deck.
@@ -712,6 +726,18 @@ module TreeInputHandler
 
     deleted_node_type = active_node[:type]
 
+    # Ignore stale multi-selection paths: nothing valid can be deleted.
+    if @selected_tree_paths && @selected_tree_paths.any?
+      valid_selected_nodes = visible_nodes_list.select do |n|
+        @selected_tree_paths.include?(n[:path]) && n[:object]
+      end
+
+      if valid_selected_nodes.empty?
+        @selected_tree_paths = []
+        return true
+      end
+    end
+
     allow_snapshot! if respond_to?(:allow_snapshot!)
     save_history_snapshot if respond_to?(:save_history_snapshot)
 
@@ -719,6 +745,15 @@ module TreeInputHandler
       visible_nodes_list, active_node, deleted_node_type,
       blueprint_deck, deck_class, lbl_deck
     )
+
+    if deleted_node_type == :deck &&
+       target_rescue_path &&
+       @undo_stack && !@undo_stack.empty?
+      @undo_stack.last[:redo_target] = {
+        type: :tree,
+        path: target_rescue_path.map(&:to_s)
+      }
+    end
 
     repair_tree_minimum_structure(
       subject_class, source_class, deck_class,
@@ -905,6 +940,7 @@ module TreeInputHandler
 
     return false unless is_page_up || is_page_down
 
+    before_state = capture_selection_state
     visible_nodes = @tree.respond_to?(:visible_nodes) ? @tree.visible_nodes : []
     return true if visible_nodes.nil? || visible_nodes.empty?
 
@@ -989,6 +1025,8 @@ module TreeInputHandler
     @search_page_viewport_start = target_offset if defined?(@search_page_viewport_start)
     @tree_viewport_render_lock = target_offset
 
+    record_selection_change(before_state)
+
     true
   end
 
@@ -1001,10 +1039,6 @@ module TreeInputHandler
 
     @previous_valid_tree_path = @tree.selected_path ? @tree.selected_path.dup : nil
 
-    # Always activate history before adding the item.
-    allow_snapshot! if respond_to?(:allow_snapshot!)
-    save_history_snapshot if respond_to?(:save_history_snapshot)
-
     if node.nil? || node[:type] == :subject
       # =========================================================================
       # CASE A: ADD SUBJECT (must be selected; path length is 1).
@@ -1015,6 +1049,9 @@ module TreeInputHandler
       new_sub = Subject.new(unique_sub_name)
       new_src = Source.new('Source')
       new_deck = Deck.new('Deck')
+
+      allow_snapshot! if respond_to?(:allow_snapshot!)
+      save_history_snapshot if respond_to?(:save_history_snapshot)
 
       new_src.decks << new_deck
       new_sub.sources << new_src
@@ -1040,6 +1077,7 @@ module TreeInputHandler
       # CASE B: ADD SOURCE (must be selected; path length is 2).
       # =========================================================================
       subject = node[:parent]
+
       return true if subject.nil?
 
       base_name = 'Source'
@@ -1047,6 +1085,10 @@ module TreeInputHandler
       new_src = Source.new(unique_src_name)
 
       new_deck = Deck.new('Deck')
+
+      # Always activate history before adding the item.
+      allow_snapshot! if respond_to?(:allow_snapshot!)
+      save_history_snapshot if respond_to?(:save_history_snapshot)
 
       new_src.decks << new_deck
       subject.sources << new_src
@@ -1074,6 +1116,10 @@ module TreeInputHandler
       unique_deck_name = generate_unique_name(source.decks, base_name)
 
       new_deck = Deck.new(unique_deck_name)
+
+      allow_snapshot! if respond_to?(:allow_snapshot!)
+      save_history_snapshot if respond_to?(:save_history_snapshot)
+
       source.decks << new_deck
 
       @tree.refresh_nodes if @tree.respond_to?(:refresh_nodes)
@@ -1138,6 +1184,29 @@ module TreeInputHandler
   # Delete a tree item, restore an empty deck if needed, and realign the selection.
   def execute_tree_delete(node)
     return true if node.nil?
+
+    object = node[:object]
+
+    valid_node = case node[:type]
+                 when :subject
+                   object && @library.subjects.any? { |s| s.equal?(object) }
+                 when :source
+                   parent = node[:parent]
+                   parent &&
+                   @library.subjects.any? { |s| s.equal?(parent) } &&
+                   parent.sources.any? { |s| s.equal?(object) }
+                 when :deck
+                   parent = node[:parent]
+                   grand_parent = node[:grand_parent]
+                   grand_parent &&
+                   @library.subjects.any? { |s| s.equal?(grand_parent) } &&
+                   grand_parent.sources.any? { |s| s.equal?(parent) } &&
+                   parent.decks.any? { |d| d.equal?(object) }
+                 else
+                   false
+                 end
+
+    return true unless valid_node
 
     wipe_all_search_artifacts
 
@@ -1397,6 +1466,8 @@ module TreeInputHandler
         end
         next false
       end
+
+      next true if new_name == active_object.name.to_s
 
       allow_snapshot! if respond_to?(:allow_snapshot!)
       # The rename callback runs while the form popup owns focus. Capture the
