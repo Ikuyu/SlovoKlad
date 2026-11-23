@@ -298,16 +298,16 @@ module AppTranslations
         Shift+G, End                    : Jump to bottom
         Control+U, PageUp               : Page up
         Control+D, PageDown             : Page down
-        Option+N, Option+P,
+        Alt+N, Alt+P,
            Shift+J, Shift+K,
            Shift+↓, Shift+↑,
            Control+Shift+A
-           Shift+M, Option+Space,
+           Shift+M, Alt+Space,
            Shift+Home, Shift+End,
            Shift+PageUp, Shift+PageDown : Mark items for bulk deletion
         Enter                           : Go to deck
-        A, +, F7                        : Add item
-        Shift+R, F2                     : Rename item
+        A, +, F7, Alt+Enter             : Add item
+        Shift+R, F2, Shift+Enter        : Rename item
         Backspace, -, F8                : Delete item(s)
         =                               : Speak current term
         /, Control+F, F                 : Search
@@ -319,8 +319,8 @@ module AppTranslations
         M                               : Switch modus
         D                               : Remove duplicates from selected deck(s)
         R                               : Reset selected deck(s)
-        Option+1, Option+2, Option+3,
-        Option+4, Option+5              : Start a study session with the selected deck
+        Alt+1, Alt+2, Alt+3,
+        Alt+4, Alt+5                    : Start a study session with the selected deck
       TEXT
       help_deck: <<~TEXT,
         Control+P, K, ↑                 : Row up
@@ -329,16 +329,16 @@ module AppTranslations
         Shift+G, End                    : Jump to bottom
         Control+U, PageUp               : Page up
         Control+D, PageDown             : Page down
-        Option+N, Option+P,
+        Alt+N, Alt+P,
            Shift+J, Shift+K,
            Shift+↓, Shift+↑,
            Control+Shift+A
-           Shift+M, Option+Space,
+           Shift+M, Alt+Space,
            Shift+Home, Shift+End,
            Shift+PageUp, Shift+PageDown : Mark cards for bulk deletion
         Shift+Enter                     : Go to library
         Space                           : (De)select card(s)
-        A, +, F7                        : Add card
+        A, +, F7, Alt+Enter             : Add card
         Enter, E, F2                    : Edit card
         Backspace, -, F8                : Delete card(s)
         /, Control+F, F                 : Search
@@ -351,8 +351,8 @@ module AppTranslations
         M                               : Switch modus
         D                               : Remove duplicates from selected deck(s)
         R                               : Reset selected deck(s)
-        Option+1 Option+2 Option+3,
-        Option+4, Option+5              : Start a study session
+        Alt+1 Alt+2 Alt+3,
+        Alt+4, Alt+5                    : Start a study session
       TEXT
       help_study: <<~TEXT,
         D = Drill
@@ -368,21 +368,21 @@ module AppTranslations
 
         Note: The J and K keys are used in PM to enter codes.
 
-        Control+P, K, ↑                : Row up (D, PM, TK)
-        Control+N, J, ↓                : Row down / up (D, PM, TK)
-        G, Home                        : Jump to top / beginning (D, PM, TK)
-        Shift+G, End                   : Jump to bottom / end (D, PM, TK)
-        Control+U PageUp               : Page up (D, PM, TK)
-        Control+D PageDown             : Page down (D, PM, TK)
-        F4                             : Toggle show context (D, Q, MC & PM, TK)
-        F5                             : Pause (D, Q, MC & PM, TK)
-        S                              : Switch seconds timer (D)
-        T                              : Toggle timer (D)
-        Space, Enter                   : Show answer (D, Q)
-        1, 2, 3, 4                     : Answer (MC)
-        Tab                            : Exclude card from future exercises (D, Q & MC) & show next card (Q & MC) | I don’t have that card (TK)
-        F2                             : Edit card (D, Q, MC & PM) | Ask a card / Hand over a card (TK)
-        =                              : Speak current term
+        Control+P, K, ↑    : Row up (D, PM, TK)
+        Control+N, J, ↓    : Row down / up (D, PM, TK)
+        G, Home            : Jump to top / beginning (D, PM, TK)
+        Shift+G, End       : Jump to bottom / end (D, PM, TK)
+        Control+U PageUp   : Page up (D, PM, TK)
+        Control+D PageDown : Page down (D, PM, TK)
+        F4                 : Toggle show context (D, Q, MC & PM, TK)
+        F5                 : Pause (D, Q, MC & PM, TK)
+        S                  : Switch seconds timer (D)
+        T                  : Toggle timer (D)
+        Space, Enter       : Show answer (D, Q)
+        1, 2, 3, 4         : Answer (MC)
+        Tab                : Exclude card from future exercises (D, Q & MC) & show next card (Q & MC) | I don’t have that card (TK)
+        F2                 : Edit card (D, Q, MC & PM) | Ask a card / Hand over a card (TK)
+        =                  : Speak current term
       TEXT
       help_input_fields: <<~TEXT
         === EDITING ===
@@ -392,37 +392,37 @@ module AppTranslations
            Control+T                  : Swap the character behind the insertion point with the character in front of the insertion point.
 
         === NAVIGATION ===
-           Control+F, →           : Move one character forwards.
-           Control+B, ←           : Move one character backwards.
+           Control+F, →               : Move one character forwards.
+           Control+B, ←               : Move one character backwards.
            Fn+↑, Fn+←,
-              Option+↑, Control+A : Move the insertion point to the beginning of the line.
+              Alt+↑, Control+A        : Move the insertion point to the beginning of the line.
            Fn+↓, Fn+→,
-              Option+↓, Control+E : Move the insertion point to the end of the line.
-           Option+F, Option+←     : Move the insertion point to the beginning of the previous word.
-           Option+B, Option+→     : Move the insertion point to the end of the next word.
-           Control+L              : Centre the insertion point in the text.
-           Tab, Control+P         : Next inputfield.
-           Backtab, Control+N     : Previous inputfield.
+              Alt+↓, Control+E        : Move the insertion point to the end of the line.
+           Alt+F, Alt+←               : Move the insertion point to the beginning of the previous word.
+           Alt+B, Alt+→               : Move the insertion point to the end of the next word.
+           Control+L                  : Centre the insertion point in the text.
+           Tab, Control+P             : Next inputfield.
+           Backtab, Control+N         : Previous inputfield.
 
         === REMOVING TEXT ===
-           Control+W, Option+Backspace   : Delete the word to the left of the insertion point.
-           Option+D, Fn+Option+Backspace : Delete the word to the right of the insertion point.
-           Control+H, Backspace          : Delete the character to the left of the insertion point.
-           Control+D, Fn+Backspace       : Delete the character to the right of the insertion point.
-           Control+K                     : Delete text from the right of the insertion point to the end of the line.
-           Control+U                     : Delete text from the insertion point to the beginning of the line.
+           Control+W, Alt+Backspace   : Delete the word to the left of the insertion point.
+           Alt+D, Fn+Alt+Backspace    : Delete the word to the right of the insertion point.
+           Control+H, Backspace       : Delete the character to the left of the insertion point.
+           Control+D, Fn+Backspace    : Delete the character to the right of the insertion point.
+           Control+K                  : Delete text from the right of the insertion point to the end of the line.
+           Control+U                  : Delete text from the insertion point to the beginning of the line.
 
         === SELECTING TEXT ===
-           Control+Shift+A                : Select all text.
+           Control+Shift+A            : Select all text.
            Shift+↑, Fn+Shift+↑,
-              Fn+Shift+←, Option+Shift+↑  : Extend text selection to the beginning of the line.
+              Fn+Shift+←, Alt+Shift+↑ : Extend text selection to the beginning of the line.
            Shift+↓, Fn+Shift+↓,
-              Fn+Shift+→, Option+Shift+↓  : Extend text selection to the end of the line.
-           Control+Shift+F, Shift+→       : Extend text selection one character to the right.
-           Control+Shift+B, Shift+←       : Extend text selection one character to the left.
-           Option+Shift+F, Option+Shift+→ : Extend text selection to the end of the current word, then to the end of the following word if pressed again.
-           Option+Shift+B, Option+Shift+← : Extend text selection to the beginning of the current word, then to the beginning of the following word if pressed again.
-           Control+Shift+L                : Extend the text selection to the centre of the text.
+              Fn+Shift+→, Alt+Shift+↓ : Extend text selection to the end of the line.
+           Control+Shift+F, Shift+→   : Extend text selection one character to the right.
+           Control+Shift+B, Shift+←   : Extend text selection one character to the left.
+           Alt+Shift+F, Alt+Shift+→   : Extend text selection to the end of the current word, then to the end of the following word if pressed again.
+           Alt+Shift+B, Alt+Shift+←   : Extend text selection to the beginning of the current word, then to the beginning of the following word if pressed again.
+           Control+Shift+L            : Extend the text selection to the centre of the text.
       TEXT
     },
     nl: {
@@ -722,16 +722,16 @@ module AppTranslations
         Shift+G, End                    : Spring naar het einde
         Control+U, PageUp               : Pagina omhoog
         Control+D, PageDown             : Pagina omlaag
-        Option+N, Option+P,
+        Alt+N, Alt+P,
            Shift+J, Shift+K,
            Shift+↓, Shift+↑,
            Control+Shift+A
-           Shift+M, Option+Space,
+           Shift+M, Alt+Space,
            Shift+Home, Shift+End,
            Shift+PageUp, Shift+PageDown : Markeer onderdelen voor bulk verwijdering
         Enter                           : Naar kaartenbak
-        A, +, F7                        : Onderdeel toevoegen
-        Shift+R, F2                     : Onderdeel hernoemen
+        A, +, F7, Alt+Enter             : Onderdeel toevoegen
+        Shift+R, F2, Shift+Enter        : Onderdeel hernoemen
         Backspace, -, F8                : Onderde(e)l(en) verwijderen
         =                               : Spreek huidige term uit
         /, Control+F, F                 : Zoeken
@@ -743,8 +743,8 @@ module AppTranslations
         M                               : Wissel modus
         D                               : Dubbele kaarten uit geselecteerde kaartenbak(ken) verwijderen
         R                               : Geselecteerde kaartenbak(ken) resetten
-        Option+1, Option+2, Option+3,
-        Option+4, Option+5              : Start een studiesessie met de geselecteerde kaartenbak
+        Alt+1, Alt+2, Alt+3,
+        Alt+4, Alt+5                    : Start een studiesessie met de geselecteerde kaartenbak
       TEXT
       help_deck: <<~TEXT,
         Control+P, K, ↑                 : Rij omhoog
@@ -753,16 +753,16 @@ module AppTranslations
         Shift+G, End                    : Spring naar het einde
         Control+U, PageUp               : Pagina omhoog
         Control+D, PageDown             : Pagina omlaag
-        Option+N, Option+P,
+        Alt+N, Alt+P,
            Shift+J, Shift+K,
            Shift+↓, Shift+↑,
            Control+Shift+A
-           Shift+M, Option+Space,
+           Shift+M, Alt+Space,
            Shift+Home, Shift+End,
            Shift+PageUp, Shift+PageDown : Markeer kaarten voor bulk verwijdering
         Shift+Enter                     : Naar bibliotheek
         Space                           : Kaart(en) (de)selecteren
-        A, +, F7                        : Kaart toevoegen
+        A, +, F7, Alt+Enter             : Kaart toevoegen
         Enter, E, F2                    : Kaart wijzigen
         Backspace, -, F8                : Kaart(en) verwijderen
         /, Control+F, F                 : Zoeken
@@ -775,8 +775,8 @@ module AppTranslations
         M                               : Wissel modus
         D                               : Dubbele kaarten uit geselecteerde kaartenbak(ken) verwijderen
         R                               : Geselecteerde kaartenbak(ken) resetten
-        Option+1, Option+2, Option+3,
-        Option+4, Option+5              : Start een studiesessie
+        Alt+1, Alt+2, Alt+3,
+        Alt+4, Alt+5                    : Start een studiesessie
       TEXT
       help_study: <<~TEXT,
         D = Stampen
@@ -792,21 +792,21 @@ module AppTranslations
 
         Opmerking: De J- en K-toetsen worden in PM gebruikt om codes in te voeren.
 
-        Control+P, K, ↑                : Rij omhoog (S, PM, TK)
-        Control+N, J, ↓                : Rij omlaag (S, PM, TK)
-        G, Home                        : Spring naar het begin (S, PM, TK)
-        Shift+G, End                   : Spring naar het einde (S, PM, TK)
-        Control+U, PageUp              : Pagina omhoog (S, PM, TK)
-        Control+D, PageDown            : Pagina omlaag (S, PM, TK)
-        F4                             : Zet context tonen aan/uit (S, O, MK & SM, TK)
-        F5                             : Pauzeren (S, O, MK & SM, TK)
-        S                              : Wissel seconden timer (D)
-        T                              : Zet timer aan/uit (D)
-        Space, Enter                   : Toon antwoord (S, O)
-        1, 2, 3, 4                     : Antwoord (MK)
-        Tab                            : Kaart uitsluiten van toekomstige oefeningen (S, O & MK) & toon volgende kaart (O & MK) | Die kaart heb ik niet (TK)
-        F2                             : Kaart bewerken (S, O, MK & SM) | Kaart vragen / kaart afstaan (TK)
-        =                              : Spreek huidige term uit
+        Control+P, K, ↑     : Rij omhoog (S, PM, TK)
+        Control+N, J, ↓     : Rij omlaag (S, PM, TK)
+        G, Home             : Spring naar het begin (S, PM, TK)
+        Shift+G, End        : Spring naar het einde (S, PM, TK)
+        Control+U, PageUp   : Pagina omhoog (S, PM, TK)
+        Control+D, PageDown : Pagina omlaag (S, PM, TK)
+        F4                  : Zet context tonen aan/uit (S, O, MK & SM, TK)
+        F5                  : Pauzeren (S, O, MK & SM, TK)
+        S                   : Wissel seconden timer (D)
+        T                   : Zet timer aan/uit (D)
+        Space, Enter        : Toon antwoord (S, O)
+        1, 2, 3, 4          : Antwoord (MK)
+        Tab                 : Kaart uitsluiten van toekomstige oefeningen (S, O & MK) & toon volgende kaart (O & MK) | Die kaart heb ik niet (TK)
+        F2                  : Kaart bewerken (S, O, MK & SM) | Kaart vragen / kaart afstaan (TK)
+        =                   : Spreek huidige term uit
       TEXT
       help_input_fields: <<~TEXT
         === BEWERKEN ===
@@ -816,37 +816,37 @@ module AppTranslations
            Control+T                  : Verwissel het teken vóór de invoegpositie met het teken erna.
 
         === NAVIGATIE ===
-           Control+F, →           : Verplaats de invoegpositie één teken naar rechts.
-           Control+B, ←           : Verplaats de invoegpositie één teken naar links.
+           Control+F, →               : Verplaats de invoegpositie één teken naar rechts.
+           Control+B, ←               : Verplaats de invoegpositie één teken naar links.
            Fn+↑, Fn+←,
-              Option+↑, Control+A : Verplaats de invoegpositie naar het begin van de regel.
+              Alt+↑, Control+A        : Verplaats de invoegpositie naar het begin van de regel.
            Fn+↓, Fn+→,
-              Option+↓, Control+E : Verplaats de invoegpositie naar het einde van de regel.
-           Option+F, Option+→     : Verplaats de invoegpositie naar het einde van het volgende woord.
-           Option+B, Option+←     : Verplaats de invoegpositie naar het begin van het vorige woord.
-           Control+L              : Plaats de invoegpositie in het midden van de tekst.
-           Tab, Control+P         : Ga naar het volgende invoerveld.
-           Backtab, Control+N     : Ga naar het vorige invoerveld.
+              Alt+↓, Control+E        : Verplaats de invoegpositie naar het einde van de regel.
+           Alt+F, Alt+→               : Verplaats de invoegpositie naar het einde van het volgende woord.
+           Alt+B, Alt+←               : Verplaats de invoegpositie naar het begin van het vorige woord.
+           Control+L                  : Plaats de invoegpositie in het midden van de tekst.
+           Tab, Control+P             : Ga naar het volgende invoerveld.
+           Backtab, Control+N         : Ga naar het vorige invoerveld.
 
         === TEKST VERWIJDEREN ===
-           Control+W, Option+Backspace   : Verwijder het woord links van de invoegpositie.
-           Option+D, Fn+Option+Backspace : Verwijder het woord rechts van de invoegpositie.
-           Control+H, Backspace          : Verwijder het teken links van de invoegpositie.
-           Control+D, Fn+Backspace       : Verwijder het teken rechts van de invoegpositie.
-           Control+K                     : Verwijder de tekst vanaf de invoegpositie tot het einde van de regel.
-           Control+U                     : Verwijder de tekst vanaf de invoegpositie tot het begin van de regel.
+           Control+W, Alt+Backspace   : Verwijder het woord links van de invoegpositie.
+           Alt+D, Fn+Alt+Backspace    : Verwijder het woord rechts van de invoegpositie.
+           Control+H, Backspace       : Verwijder het teken links van de invoegpositie.
+           Control+D, Fn+Backspace    : Verwijder het teken rechts van de invoegpositie.
+           Control+K                  : Verwijder de tekst vanaf de invoegpositie tot het einde van de regel.
+           Control+U                  : Verwijder de tekst vanaf de invoegpositie tot het begin van de regel.
 
         === TEKST SELECTEREN ===
-           Control+Shift+A                : Selecteer alle tekst.
+           Control+Shift+A            : Selecteer alle tekst.
            Shift+↑, Fn+Shift+↑,
-              Fn+Shift+←, Option+Shift+↑  : Breid de selectie uit tot het begin van de regel.
+              Fn+Shift+←, Alt+Shift+↑ : Breid de selectie uit tot het begin van de regel.
            Shift+↓, Fn+Shift+↓,
-              Fn+Shift+→, Option+Shift+↓  : Breid de selectie uit tot het einde van de regel.
-           Control+Shift+F, Shift+→       : Breid de selectie één teken naar rechts uit.
-           Control+Shift+B, Shift+←       : Breid de selectie één teken naar links uit.
-           Option+Shift+F, Option+Shift+→ : Breid de selectie uit tot het einde van het huidige woord. Druk opnieuw om uit te breiden tot het einde van het volgende woord.
-           Option+Shift+B, Option+Shift+← : Breid de selectie uit tot het begin van het huidige woord. Druk opnieuw om uit te breiden tot het begin van het volgende woord.
-           Control+Shift+L                : Breid de selectie uit tot het midden van de tekst.
+              Fn+Shift+→, Alt+Shift+↓ : Breid de selectie uit tot het einde van de regel.
+           Control+Shift+F, Shift+→   : Breid de selectie één teken naar rechts uit.
+           Control+Shift+B, Shift+←   : Breid de selectie één teken naar links uit.
+           Alt+Shift+F, Alt+Shift+→   : Breid de selectie uit tot het einde van het huidige woord. Druk opnieuw om uit te breiden tot het einde van het volgende woord.
+           Alt+Shift+B, Alt+Shift+←   : Breid de selectie uit tot het begin van het huidige woord. Druk opnieuw om uit te breiden tot het begin van het volgende woord.
+           Control+Shift+L            : Breid de selectie uit tot het midden van de tekst.
       TEXT
     }
   }.freeze

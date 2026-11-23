@@ -242,22 +242,6 @@ module TableInputHandler
 
     context = prepare_table_input_context(key, modifiers)
 
-    # DEBUG Shift+Enter — schrijf toetsinformatie naar bestand
-    begin
-      File.open('slovoklad_shift_enter.log', 'a') do |f|
-        f.puts(
-          "[#{Time.now}] " \
-          "key=#{key.inspect} " \
-          "key_class=#{key.class} " \
-          "modifiers=#{modifiers.inspect} " \
-          "context_shift=#{context[:has_shift].inspect} " \
-          "focus=#{@active_focus.inspect}"
-        )
-      end
-    rescue StandardError => e
-      warn "Shift+Enter debug error: #{e.message}"
-    end
-
     return true if context[:pure_alt_space_handled]
     return false if context[:invalid_ctrl]
 

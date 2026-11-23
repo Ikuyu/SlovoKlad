@@ -549,12 +549,12 @@ class RatatuiRubyApp
   end
 
   def enable_mouse_capture
-    supported = RatatuiRuby::Terminal.supports_keyboard_enhancement?
+    # supported = RatatuiRuby::Terminal.supports_keyboard_enhancement?
 
-    File.open('slovoklad_keyboard_support.log', 'a') do |f|
-      f.puts "[#{Time.now}] supports_keyboard_enhancement=#{supported.inspect}"
-      f.puts "[#{Time.now}] TERM=#{ENV['TERM']} TERM_PROGRAM=#{ENV['TERM_PROGRAM']}"
-    end
+    # File.open('slovoklad_keyboard_support.log', 'a') do |f|
+    #   f.puts "[#{Time.now}] supports_keyboard_enhancement=#{supported.inspect}"
+    #   f.puts "[#{Time.now}] TERM=#{ENV['TERM']} TERM_PROGRAM=#{ENV['TERM_PROGRAM']}"
+    # end
 
     return unless RatatuiRuby.respond_to?(:enable_mouse_capture!)
 
@@ -644,29 +644,33 @@ class RatatuiRubyApp
   end
 
   def render_study_mode(tui, frame)
-    study_canvas_height = frame.area.height - 3
-    study_canvas_region = RatatuiRuby::Layout::Rect.new(0, 0, frame.area.width, study_canvas_height)
+    settings = AppConfig.settings
+    # Reserveer ruimte voor de bestaande onderste applicatieregio.
+    study_canvas_height = [frame.area.height - 3, 0].max
+
+    study_canvas_region = RatatuiRuby::Layout::Rect.new(
+      0, 0, frame.area.width, study_canvas_height
+    )
+
     study_title = study_mode_title
 
-    is_popup_active = defined?(@popup) && @popup && @popup.respond_to?(:active?) && @popup.active?
+    is_popup_active = defined?(@popup) && @popup &&
+                      @popup.respond_to?(:active?) && @popup.active?
 
-    title_style = if is_popup_active
-                    { fg: AppConfig.settings.theme_item(:window_title),
-                      bg: AppConfig.settings.theme_item(:background),
-                      modifiers: [:dim] }
-                  else
-                    { fg: AppConfig.settings.theme_item(:window_title),
-                      bg: AppConfig.settings.theme_item(:background) }
-                  end
+    title_style = {
+      fg: AppConfig.settings.theme_item(:window_title),
+      bg: AppConfig.settings.theme_item(:background)
+    }
 
-    border_style = if is_popup_active
-                     { fg: AppConfig.settings.theme_item(:window_border),
-                       bg: AppConfig.settings.theme_item(:background),
-                       modifiers: [:dim] }
-                   else
-                     { fg: AppConfig.settings.theme_item(:window_border),
-                       bg: AppConfig.settings.theme_item(:background) }
-                   end
+    border_style = {
+      fg: AppConfig.settings.theme_item(:window_border),
+      bg: AppConfig.settings.theme_item(:background)
+    }
+
+    if is_popup_active
+      title_style[:modifiers] = [:dim]
+      border_style[:modifiers] = [:dim]
+    end
 
     study_block = tui.block(
       title: " #{study_title} ",
@@ -677,12 +681,55 @@ class RatatuiRubyApp
       border_type: AppConfig.settings.corner
     )
 
-    study_inner_region = study_block.inner(study_canvas_region) if study_block.respond_to?(:inner)
+    # Geen negatieve of onbruikbare Rect tekenen.
+    return if frame.area.width <= 0 || study_canvas_height <= 0
+
+    study_inner_region = study_block.inner(study_canvas_region) if
+      study_block.respond_to?(:inner)
+
     study_inner_region ||= study_canvas_region
+
     frame.render_widget(study_block, study_canvas_region)
 
-    # 🎯 RESTORED: Do not apply an outer dim_block here.
-    # This keeps the uniform background beneath the popup fully opaque.
+    # Minimale ruimte voor header, tabel en context.
+    minimum_width = 20
+    minimum_height = 8
+
+    if study_inner_region.width < minimum_width ||
+       study_inner_region.height < minimum_height
+
+      message_lines = [
+        'Window too small',
+        '',
+        'Enlarge terminal',
+        'to continue.'
+      ]
+
+      if study_inner_region.width > 0 && study_inner_region.height > 0
+        start_y = study_inner_region.y +
+                  [(study_inner_region.height - message_lines.length) / 2, 0].max
+
+        message_lines.each_with_index do |line, index|
+          y = start_y + index
+
+          break if y >= study_inner_region.y + study_inner_region.height
+
+          frame.render_widget(
+            tui.paragraph(text: line, alignment: :center, wrap: false,
+                          style: tui.style(fg: settings.theme_item(:foreground),
+                                           modifiers: [2, 3].include?(index) ? [:dim] : [])),
+            RatatuiRuby::Layout::Rect.new(
+              study_inner_region.x,
+              y,
+              study_inner_region.width,
+              1
+            )
+          )
+        end
+      end
+
+      return
+    end
 
     render_study_content(tui, frame, study_inner_region)
   end
@@ -731,6 +778,41 @@ class RatatuiRubyApp
   end
 
   def render_normal_mode(tui, frame, top_region, middle_region)
+    settings = AppConfig.settings
+    minimum_width = 20
+    minimum_height = 8
+
+    if frame.area.width < minimum_width ||
+       middle_region.height < minimum_height
+
+      message_lines = [
+        'Window too small',
+        '',
+        'Enlarge terminal',
+        'to continue.'
+      ]
+
+      if frame.area.width > 0 && frame.area.height > 0
+        start_y = [(frame.area.height - message_lines.length) / 2, 0].max
+
+        message_lines.each_with_index do |line, index|
+          y = start_y + index
+          break if y >= frame.area.height
+
+          frame.render_widget(
+            tui.paragraph(text: line, alignment: :center, wrap: false,
+                          style: tui.style(fg: settings.theme_item(:foreground),
+                                           modifiers: [2, 3].include?(index) ? [:dim] : [])),
+            RatatuiRuby::Layout::Rect.new(
+              0, y, frame.area.width, 1
+            )
+          )
+        end
+      end
+
+      return
+    end
+
     middle_left_region, _middle_buffer_region, middle_right_region = tui.layout_split(
       middle_region,
       direction: :horizontal,
@@ -830,14 +912,6 @@ class RatatuiRubyApp
   def process_application_event(event)
     case event
     in { type: :key, code: key_code, modifiers: raw_mods }
-
-      File.open('slovoklad_raw_keys.log', 'a') do |f|
-        f.puts(
-          "[#{Time.now}] event=#{event.inspect} " \
-          "key=#{key_code.inspect} modifiers=#{raw_mods.inspect} " \
-          "kitty=#{@kitty_keyboard_enabled}"
-        )
-      end
 
       _consumed = process_key_input(
         key_code,

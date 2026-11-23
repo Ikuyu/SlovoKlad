@@ -420,11 +420,22 @@ module TreeInputHandler
       # =====================================================================
       return true
 
-    # =========================================================================
-    # COMBINED ENTER GATEWAY: ADD VS RENAME VS TREE MUTATIONS
-    # =========================================================================
+      # =========================================================================
+      # ENTER: ALT+ENTER = RENAME, ENTER = OPEN TABLE
+      # =========================================================================
     when 'enter', 'Enter', "\r", "\n"
       wipe_all_search_artifacts
+
+      if has_shift
+        trigger_rename_popup(key_str, current_node) if current_node
+        return true
+      end
+
+      if has_alt
+        execute_tree_add(current_node) if current_node
+        return true
+      end
+
       sync_indices_from_tree_path if respond_to?(:sync_indices_from_tree_path)
 
       @last_focus = :tree
@@ -1393,7 +1404,7 @@ module TreeInputHandler
       end
 
       # Universele basistoetsen die ALTIJD geldig zijn ongeacht de taal
-      is_universal_rename_key = %w[R f2].include?(key_str)
+      is_universal_rename_key = %w[R f2 enter Enter return].include?(key_str)
 
       is_allowed = if lang == :nl
                      is_universal_rename_key

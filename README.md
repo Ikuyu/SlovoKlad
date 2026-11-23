@@ -226,10 +226,10 @@ bundle exec ruby app.rb \
 |---|---|
 | `Control+F`, `→` | Move one character forwards. |
 | `Control+B`, `←` | Move one character backwards. |
-| `Fn↑`, `Fn←`, `Option+↑`, `Control+A` | Move the insertion point to the beginning of the line. |
-| `Fn↓`, `Fn→`, `Option+↓`, `Control+E` | Move the insertion point to the end of the line. |
-| `Option+F`, `Option+→` | Move the insertion point to the end of the next word. |
-| `Option+B`, `Option+←` | Move the insertion point to the beginning of the previous word. |
+| `Fn↑`, `Fn←`, `Alt+↑`, `Control+A` | Move the insertion point to the beginning of the line. |
+| `Fn↓`, `Fn→`, `Alt+↓`, `Control+E` | Move the insertion point to the end of the line. |
+| `Alt+F`, `Alt+→` | Move the insertion point to the end of the next word. |
+| `Alt+B`, `Alt+←` | Move the insertion point to the beginning of the previous word. |
 | `Control+L` | Centre the insertion point in the text. |
 | `Tab`, `Control+P` | Move to the next input field. |
 | `Backtab`, `Control+N` | Move to the previous input field. |
@@ -238,8 +238,8 @@ bundle exec ruby app.rb \
 
 | Shortcut | Action |
 |---|---|
-| `Control+W`, `Option+Backspace` | Delete the word to the left of the insertion point. |
-| `Option+D`, `Fn+Option+Backspace` | Delete the word to the right of the insertion point. |
+| `Control+W`, `Alt+Backspace` | Delete the word to the left of the insertion point. |
+| `Alt+D`, `Fn+Alt+Backspace` | Delete the word to the right of the insertion point. |
 | `Control+H`, `Backspace` | Delete the character to the left of the insertion point. |
 | `Control+D`, `Fn+Backspace` | Delete the character to the right of the insertion point. |
 | `Control+K` | Delete the text from the insertion point to the end of the line. |
@@ -250,10 +250,10 @@ bundle exec ruby app.rb \
 | Shortcut | Action |
 |---|---|
 | `Control+Shift+A` | Select all text. |
-| `Shift+↑`, `Fn+Shift+↑`, `Fn+Shift+←`, `Option+Shift+↑` | Extend the selection to the beginning of the line. |
-| `Shift+↓`, `Fn+Shift+↓`, `Fn+Shift+→`, `Option+Shift+↓` | Extend the selection to the end of the line. |
+| `Shift+↑`, `Fn+Shift+↑`, `Fn+Shift+←`, `Alt+Shift+↑` | Extend the selection to the beginning of the line. |
+| `Shift+↓`, `Fn+Shift+↓`, `Fn+Shift+→`, `Alt+Shift+↓` | Extend the selection to the end of the line. |
 | `Control+Shift+F`, `Shift+→` | Extend the selection one character to the right. |
 | `Control+Shift+B`, `Shift+←` | Extend the selection one character to the left. |
-| `Option+Shift+F`, `Option+Shift+→` | Extend the selection to the end of the current word. Press again to extend it to the end of the next word. |
-| `Option+Shift+B`, `Option+Shift+←` | Extend the selection to the beginning of the current word. Press again to extend it to the beginning of the previous word. |
+| `Alt+Shift+F`, `Alt+Shift+→` | Extend the selection to the end of the current word. Press again to extend it to the end of the next word. |
+| `Alt+Shift+B`, `Alt+Shift+←` | Extend the selection to the beginning of the current word. Press again to extend it to the beginning of the previous word. |
 | `Control+Shift+L` | Extend the selection to the centre of the text. |

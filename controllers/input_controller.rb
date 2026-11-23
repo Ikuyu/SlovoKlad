@@ -901,20 +901,6 @@ def handle_focus_specific_input(key, modifiers, key_raw_check, settings)
                @library.subjects[s_idx].sources[src_idx].decks[d_idx]
 
     if has_deck
-      # DEBUG: toetsinvoer vóór overdracht aan TableInputHandler
-      begin
-        File.open('slovoklad_shift_enter.log', 'a') do |f|
-          f.puts(
-            "[INPUT_CONTROLLER #{Time.now}] " \
-            "key=#{key.inspect} " \
-            "focus_on_enter=#{focus_on_enter.inspect} " \
-            "modifiers=#{modifiers.inspect} " \
-            "active_focus=#{@active_focus.inspect}"
-          )
-        end
-      rescue StandardError => e
-        warn "Input controller debug error: #{e.message}"
-      end
       table_action_consumed = handle_table_input(key, focus_on_enter, modifiers)
       return true if table_action_consumed
     end

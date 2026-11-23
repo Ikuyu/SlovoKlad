@@ -487,7 +487,11 @@ def draw_bottom_region(tui, frame, region)
   # This keeps all columns fixed in place.
   # =========================================================================
 
-  if context[:has_active_search] || replacing_status?(context) || is_test_active
+  if context[:has_active_search] ||
+     replacing_status?(context) ||
+     is_test_active ||
+     (popup_data.is_a?(Hash) && popup_data[:type] == :form)
+
     # JOUW BREEDTE-ANKER VOOR GEBALANSEERDE MODI:
     # Preserve the natural spans without adding trailing padding spaces,
     # waardoor de spacers het middenstuk exact naar het visuele centrum trekken!
@@ -590,18 +594,102 @@ def draw_bottom_region(tui, frame, region)
   usable_width = [available_width - (side_margin * 2), 0].max
 
   # =========================================================================
-  # 📐 BEREKEN DE TUSSENRUIMTES VOOR EEN GECENTREERD MIDDENSEGMENT
+  # 📐 DYNAMISCHE STATUSBAR-UITLIJNING
+  # Bewaar de oorspronkelijke posities en corrigeer beide tussenruimtes
+  # op basis van veranderingen in de breedte van links en het midden.
   # =========================================================================
 
-  # Determine the gap between the left and right text.
-  space_between = (usable_width || 0).to_i - (left_text_len || 0).to_i - (right_text_len || 0).to_i
+  # Herken invoerformulieren: Add, Edit, Rename en eventuele
+  # Search- en Replace-formulieren.
+  is_form_popup =
+    popup_data.is_a?(Hash) &&
+    popup_data[:type] == :form
 
-  # Bereken de resterende ruimte na plaatsing van het middensegment.
-  free_space = space_between - (middle_text_len || 0).to_i
+  spacing_mode =
+    if is_test_active
+      :study
+    elsif is_form_popup
+      :form
+    elsif !popup_is_displayed
+      :cockpit
+    end
 
-  # Verdeel de vrije ruimte gelijkmatig over beide kanten van het midden.
-  left_gap = [free_space / 2, 0].max
-  right_gap = [free_space - left_gap, 0].max
+  spacing_enabled =
+    spacing_mode &&
+    !is_test_starting &&
+    !is_two_of_a_kind_start_message &&
+    (
+      is_form_popup ||
+      (
+        !context[:has_active_search] &&
+        !replacing_status?(context)
+      )
+    )
+
+  if spacing_enabled
+    layout_key = [
+      spacing_mode,
+      available_width,
+      right_text_len
+    ]
+
+    # Initialiseer de referentie bij de eerste render of een
+    # verandering van modus, terminalbreedte of rechtersegment.
+    unless @statusbar_spacing_reference &&
+           @statusbar_spacing_reference[:key] == layout_key
+
+      free_space = [
+        usable_width - left_text_len - middle_text_len - right_text_len,
+        0
+      ].max
+
+      initial_left_gap = free_space / 2
+      initial_right_gap = free_space - initial_left_gap
+
+      @statusbar_spacing_reference = {
+        key: layout_key,
+        left_width: left_text_len,
+        middle_width: middle_text_len,
+        left_gap: initial_left_gap,
+        right_gap: initial_right_gap
+      }
+    end
+
+    reference = @statusbar_spacing_reference
+
+    # Links: groei verkleint de linkertussenruimte.
+    # Krimp vergroot de linkertussenruimte.
+    left_gap = [
+      reference[:left_gap] -
+        (left_text_len - reference[:left_width]),
+      0
+    ].max
+
+    # Midden: groei verkleint de rechtertussenruimte.
+    # Krimp vergroot de rechtertussenruimte.
+    right_gap = [
+      reference[:right_gap] -
+        (middle_text_len - reference[:middle_width]),
+      0
+    ].max
+
+  else
+    # Overige weergaven behouden de oorspronkelijke uitlijning.
+    @statusbar_spacing_reference = nil
+
+    space_between = usable_width - left_text_len - right_text_len
+    free_space = space_between - middle_text_len
+
+    left_gap = [free_space / 2, 0].max
+    right_gap = [free_space - left_gap, 0].max
+  end
+
+  # Houd minimaal 3 spaties vrij aan beide kanten van het middensegment.
+  # Alleen van toepassing op cockpit en study-sessions.
+  if spacing_enabled
+    left_gap  = [left_gap, 3].max
+    right_gap = [right_gap, 3].max
+  end
 
   # Bouw de volledige statusbalkregel op.
   all_spans = [
