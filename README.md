@@ -59,48 +59,86 @@ bundle exec ruby app.rb example
 
 ## 2.6 Build a Standalone Executable
 
-**SlovoKlad** can also be packaged as a standalone executable using [Tebako](https://github.com/tamatebako/tebako).
+**SlovoKlad** can be packaged as a standalone executable using [Tebako](https://github.com/tamatebako/tebako).
 
-Make sure Ruby, Mise and the application dependencies are installed. Then run the build script from the project root:
+Make sure Ruby, Mise, Tebako and the application dependencies are installed. ImageMagick is also required to generate the application icons.
+
+Run the build script from the project root:
 
 ```bash
 ruby build.rb
 ```
 
-The script prepares a staging directory, packages the application and creates an executable for the platform on which the build is run.
+The build script automatically detects the current operating system and creates the executable and corresponding application icon for that platform.
 
 The resulting directory structure is:
 
 ```text
 dist/
 ├── macos/
-│   └── Slovoklad
+│   ├── Slovoklad
+│   ├── Slovoklad.app/
+│   └── Slovoklad.icns
 ├── windows/
-│   └── Slovoklad.exe
+│   ├── Slovoklad.exe
+│   └── Slovoklad.ico
 └── linux/
-    └── Slovoklad
+    ├── Slovoklad
+    ├── Slovoklad.png
+    ├── Slovoklad.desktop
+    └── install.sh
 ```
 
-Only the executable for the current build platform is created or updated. Existing executables for other platforms are preserved.
+Only the executable and application files for the current build platform are created or updated. Existing builds for other platforms are preserved.
 
-To run the executable:
+### Platform-specific requirements and instructions
 
 **macOS**
-```bash
-./dist/macos/Slovoklad
-```
+
+The build uses the standard macOS `iconutil` utility to generate the ICNS icon.
+
+Two ways to run SlovoKlad are available:
+
+- Run the standalone executable from a terminal.
+- Double-click `Slovoklad.app` in Finder.
+
+The application bundle automatically tries to launch iTerm2 first and Ghostty as a fallback. One of these terminal emulators must be installed to use the application bundle.
 
 **Linux**
+
+ImageMagick is used to generate the PNG application icon.
+
+To add SlovoKlad to the desktop application menu, run the installer:
+
+```bash
+./dist/linux/install.sh
+```
+
+The installer copies the executable and icon to the user's local application directory and creates a desktop entry.
+
+Alternatively, run the standalone executable directly:
+
 ```bash
 ./dist/linux/Slovoklad
 ```
 
-**Windows (PowerShell)**
+**Windows**
+
+ImageMagick is used to generate the ICO application icon. The build script also requires [rcedit](https://github.com/electron/rcedit) to embed the icon into the Windows executable.
+
+Make sure `rcedit` is installed and available in `PATH` before running the build.
+
+Run the executable from PowerShell:
+
 ```powershell
 .\dist\windows\Slovoklad.exe
 ```
 
-Tebako builds for the current host platform. To produce executables for other operating systems, run the build script on the respective platform.
+### Cross-platform builds
+
+Tebako builds for the current host operating system. To produce executables for other operating systems, run the build script on the respective platform.
+
+The build script checks for the required tools and reports missing dependencies before starting the build.
 
 ## 2.7 Available Command Line Options
 
