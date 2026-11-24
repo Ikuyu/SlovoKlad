@@ -1,5 +1,6 @@
 class PopupManager
   attr_reader :active_popup, :popup_callback
+  attr_writer :on_close_callback
 
   def initialize
     @active_popup = nil
@@ -41,8 +42,13 @@ class PopupManager
   end
 
   def close
+    callback = @on_close_callback
+
     @active_popup = nil
     @popup_callback = nil
+    @on_close_callback = nil
+
+    callback.call if callback
   end
 
   def active?

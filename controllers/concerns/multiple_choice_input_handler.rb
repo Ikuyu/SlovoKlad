@@ -9,6 +9,12 @@ module MultipleChoiceInputHandler
   def handle_multiple_choice_input(key, modifiers = [])
     raw_key_str = key.to_s.sub(/\A:/, '')
     key_str     = raw_key_str.downcase
+    normalized_modifiers = modifiers.map(&:to_s).map(&:downcase)
+
+    if %w[enter return].include?(key_str) &&
+       normalized_modifiers.include?('shift')
+      key_str = 'f2'
+    end
 
     # =========================================================================
     # 🎯 STANDAARD AFSLUITER
@@ -120,7 +126,10 @@ module MultipleChoiceInputHandler
 
     when 'f2'
       was_already_paused = (@test_timer_paused == true)
-      test_toggle_pause unless was_already_paused
+      unless was_already_paused
+        test_toggle_pause
+        @pause_for_card_edit = true
+      end
 
       if respond_to?(:handle_table_edit_card, true)
         s_idx   = @current_subject_idx || 0
@@ -141,7 +150,18 @@ module MultipleChoiceInputHandler
                 @table_state.select(db_card_row_idx)
               end
               simulated_context = { is_edit_action: true, selected_row: db_card_row_idx, cards_list: db_cards_list }
+
               handle_table_edit_card(simulated_context)
+
+              if @pause_for_card_edit && @popup&.active?
+                @popup.on_close_callback = lambda do
+                  if @pause_for_card_edit
+                    @pause_for_card_edit = false
+                    @test_last_tick_time = Process.clock_gettime(Process::CLOCK_MONOTONIC)
+                    test_toggle_pause
+                  end
+                end
+              end
 
               current_test_card.term    = db_cards_list[db_card_row_idx].term
               current_test_card.context = db_cards_list[db_card_row_idx].context
@@ -155,8 +175,11 @@ module MultipleChoiceInputHandler
       @last_focus               = :study_focus_mode
       @current_study_mode       = :multiple_choice
 
-      @test_last_tick_time = Process.clock_gettime(Process::CLOCK_MONOTONIC) unless was_already_paused
-      test_toggle_pause unless was_already_paused
+      unless @pause_for_card_edit && @popup&.active?
+        @pause_for_card_edit = false
+        @test_last_tick_time = Process.clock_gettime(Process::CLOCK_MONOTONIC) unless was_already_paused
+        test_toggle_pause unless was_already_paused
+      end
 
       return true
     end

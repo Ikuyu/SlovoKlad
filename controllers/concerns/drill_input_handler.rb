@@ -31,6 +31,9 @@ module DrillInputHandler
 
     @drill_viewport_start = @test_drill_scroll_y
 
+    key_str = 'f2' if %w[enter return].include?(key_str) &&
+                      normalized_modifiers.include?('shift')
+
     case key_str
     when '='
       current_test_card = @cards_to_test[@test_current_idx]
@@ -237,9 +240,12 @@ module DrillInputHandler
     # 📑 TOETSEN: ENTER / LIVE CARD UPDATES VIA POPUP (OBJECT IDENTITY FIX)
     # FIXED: Always retrieve the correct duplicate card by object_id.
     # =========================================================================
-    when 'f2'
+    when 'f2', 'enter', 'return'
       was_already_paused = (@test_timer_paused == true)
-      test_toggle_pause unless was_already_paused
+      unless was_already_paused
+        test_toggle_pause
+        @pause_for_card_edit = true
+      end
 
       if respond_to?(:handle_table_edit_card, true)
         s_idx   = @current_subject_idx || 0
@@ -262,7 +268,18 @@ module DrillInputHandler
                 @table_state.select(db_card_row_idx)
               end
               simulated_context = { is_edit_action: true, selected_row: db_card_row_idx, cards_list: db_cards_list }
+
               handle_table_edit_card(simulated_context)
+
+              if @pause_for_card_edit && @popup&.active?
+                @popup.on_close_callback = lambda do
+                  if @pause_for_card_edit
+                    @pause_for_card_edit = false
+                    @test_last_tick_time = Process.clock_gettime(Process::CLOCK_MONOTONIC)
+                    test_toggle_pause
+                  end
+                end
+              end
 
               # Neem de gewijzigde gegevens direct synchroon over in de actieve testsessie
               current_test_card.term    = db_cards_list[db_card_row_idx].term
@@ -277,8 +294,11 @@ module DrillInputHandler
       @last_focus         = :study_focus_mode
       @current_study_mode = :drill
 
-      @test_last_tick_time = Process.clock_gettime(Process::CLOCK_MONOTONIC) unless was_already_paused
-      test_toggle_pause unless was_already_paused
+      unless @pause_for_card_edit && @popup&.active?
+        @pause_for_card_edit = false
+        @test_last_tick_time = Process.clock_gettime(Process::CLOCK_MONOTONIC) unless was_already_paused
+        test_toggle_pause unless was_already_paused
+      end
 
       return true
 

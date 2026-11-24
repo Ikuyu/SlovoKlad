@@ -135,9 +135,14 @@ module TwoOfAKindInputHandler
       return true
     end
 
-    is_enter = ['space', ' ', 'enter', 'return', "\r", "\n"].include?(key_str)
-
     normalized_modifiers = modifiers.map(&:to_s).map(&:downcase)
+
+    if %w[enter return].include?(key_str) &&
+       normalized_modifiers.include?('shift')
+      key_str = 'f2'
+    end
+
+    is_enter = ['space', ' ', 'enter', 'return', "\r", "\n"].include?(key_str)
     total_cards = @user_hand.length
 
     if key_str == 'tab'
@@ -263,7 +268,10 @@ module TwoOfAKindInputHandler
     case key_str
     when 'f2'
       was_already_paused = (@test_timer_paused == true)
-      test_toggle_pause unless was_already_paused
+      unless was_already_paused
+        test_toggle_pause
+        @pause_for_card_edit = true
+      end
 
       if respond_to?(:handle_table_edit_card, true)
         s_idx = @current_subject_idx || 0
@@ -273,7 +281,10 @@ module TwoOfAKindInputHandler
 
         if active_deck
           db_cards_list = active_deck.cards || []
-          current_test_card = @cards_to_test[@test_current_idx]
+          selected_hand_card = @user_hand[@user_card_index]
+          current_test_card = if selected_hand_card
+                                db_cards_list.find { |card| card.object_id == selected_hand_card[:id] }
+                              end
 
           if current_test_card
             db_card_row_idx = db_cards_list.index { |card| card.equal?(current_test_card) }
@@ -291,6 +302,16 @@ module TwoOfAKindInputHandler
 
               handle_table_edit_card(simulated_context)
 
+              if @pause_for_card_edit && @popup&.active?
+                @popup.on_close_callback = lambda do
+                  if @pause_for_card_edit
+                    @pause_for_card_edit = false
+                    @test_last_tick_time = Process.clock_gettime(Process::CLOCK_MONOTONIC)
+                    test_toggle_pause
+                  end
+                end
+              end
+
               current_test_card.term = db_cards_list[db_card_row_idx].term
               current_test_card.context = db_cards_list[db_card_row_idx].context
               current_test_card.meaning = db_cards_list[db_card_row_idx].meaning
@@ -303,8 +324,11 @@ module TwoOfAKindInputHandler
       @last_focus = :study_focus_mode
       @current_study_mode = :two_of_a_kind
 
-      @test_last_tick_time = Process.clock_gettime(Process::CLOCK_MONOTONIC) unless was_already_paused
-      test_toggle_pause unless was_already_paused
+      unless @pause_for_card_edit && @popup&.active?
+        @pause_for_card_edit = false
+        @test_last_tick_time = Process.clock_gettime(Process::CLOCK_MONOTONIC) unless was_already_paused
+        test_toggle_pause unless was_already_paused
+      end
 
       return true
 

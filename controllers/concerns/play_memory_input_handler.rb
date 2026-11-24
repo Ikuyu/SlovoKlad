@@ -58,6 +58,9 @@ module PlayMemoryInputHandler
     key_str = key.to_s.strip.sub(/\A:/, '')
     key_down = key_str.downcase
     mods = Array(modifiers).map { |m| m.to_s.downcase }
+
+    key_down = 'f2' if %w[enter return].include?(key_down) && mods.include?('shift')
+
     has_ctrl = mods.intersect?(%w[ctrl control])
 
     is_up =
@@ -116,7 +119,10 @@ module PlayMemoryInputHandler
 
     when 'f2'
       was_already_paused = (@test_timer_paused == true)
-      test_toggle_pause unless was_already_paused
+      unless was_already_paused
+        test_toggle_pause
+        @pause_for_card_edit = true
+      end
 
       if respond_to?(:handle_table_edit_card, true)
         active_deck = @library.subjects[@current_subject_idx || 0]
@@ -150,6 +156,16 @@ module PlayMemoryInputHandler
 
                 handle_table_edit_card(simulated_context)
 
+                if @pause_for_card_edit && @popup&.active?
+                  @popup.on_close_callback = lambda do
+                    if @pause_for_card_edit
+                      @pause_for_card_edit = false
+                      @test_last_tick_time = Process.clock_gettime(Process::CLOCK_MONOTONIC)
+                      test_toggle_pause
+                    end
+                  end
+                end
+
                 # Herstel Memory-focus na het sluiten van de editor.
                 @active_focus       = :study_focus_mode
                 @last_focus         = :study_focus_mode
@@ -167,8 +183,11 @@ module PlayMemoryInputHandler
       @last_focus         = :study_focus_mode
       @current_study_mode = :memory
 
-      @test_last_tick_time = Process.clock_gettime(Process::CLOCK_MONOTONIC) unless was_already_paused
-      test_toggle_pause unless was_already_paused
+      unless @pause_for_card_edit && @popup&.active?
+        @pause_for_card_edit = false
+        @test_last_tick_time = Process.clock_gettime(Process::CLOCK_MONOTONIC) unless was_already_paused
+        test_toggle_pause unless was_already_paused
+      end
     end
 
     # Navigation remains available while the timer is paused.
