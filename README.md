@@ -1,7 +1,7 @@
 # 1. ABOUT SLOVOKLAD
 
 <p align="center">
-  <img src="assets/logo-3.webp" alt="SlovoKlad logo" width="300">
+  <img src="assets/logo.webp" alt="SlovoKlad logo" width="300">
 </p>
 
 **SlovoKlad** (RU: “word treasure”) is a TUI dashboard and study aid. You decide what to learn and when to learn it. Flashcards are only marked as **learned** when you say they are. With several study methods to choose from, you can pick the one that works best for you.
