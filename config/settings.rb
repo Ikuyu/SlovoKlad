@@ -81,8 +81,9 @@ end
 
 # The Settings class is only required for loading and saving the stettings
 class Settings
-  attr_accessor :selected_marker_symbol, :language, :theme, :corner, :collapsing_borders, :beeps, :rotation_indicator_enabled,
-                :study_strategy, :last_opened_filename, :custom_theme_name, :custom_theme_path, :startup_screen_font_name
+  attr_accessor :selected_marker_symbol, :language, :theme, :corner, :collapsing_borders, :beeps,
+                :rotation_indicator_enabled, :alternate_rows_enabled, :study_strategy, :last_opened_filename,
+                :custom_theme_name, :custom_theme_path, :startup_screen_font_name
   attr_reader :corrupt_on_load
 
   def initialize
@@ -93,8 +94,9 @@ class Settings
     @theme                      = AppConfig::SETTINGS[:theme]
     @corner                     = AppConfig::SETTINGS[:corner]
     @collapsing_borders         = AppConfig::SETTINGS[:collapsing_borders]
-    @beeps                      = true # 🎯 DEFAULT ANKER: Standaard staan beeps aan
-    @rotation_indicator_enabled = true # 🎯 DEFAULT ANKER: Standaard staat de rotatie-indicator aan
+    @beeps                      = true
+    @rotation_indicator_enabled = true
+    @alternate_rows_enabled     = true
     @study_strategy             = AppConfig::SETTINGS[:study_strategy]
     @last_opened_filename       = AppConfig::SETTINGS[:last_opened_filename]
     @startup_screen_font_name   = AppConfig::SETTINGS[:startup_screen_font_name]
@@ -200,6 +202,7 @@ class Settings
       corner: @corner,
       beeps: @beeps,
       rotation_indicator_enabled: @rotation_indicator_enabled,
+      alternate_rows_enabled: @alternate_rows_enabled,
       last_opened_filename: @last_opened_filename,
       startup_screen_font_name: @startup_screen_font_name,
       # collapsing_borders: @collapsing_borders
@@ -261,6 +264,7 @@ class Settings
 
     @beeps = valid_boolean(loaded_data[:beeps], true)
     @rotation_indicator_enabled = valid_boolean(loaded_data[:rotation_indicator_enabled], true)
+    @alternate_rows_enabled = valid_boolean(loaded_data[:alternate_rows_enabled], true)
     @last_opened_filename = loaded_data[:last_opened_filename] || AppConfig::SETTINGS[:last_opened_filename]
     @startup_screen_font_name = loaded_data[:startup_screen_font_name] || AppConfig::SETTINGS[:startup_screen_font_name]
     @custom_theme_name = loaded_data[:custom_theme_name]

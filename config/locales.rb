@@ -235,11 +235,12 @@ module AppTranslations
         ]       : Deck
         Tab     : Next panel
         Backtab : Previous panel
-        |       : Toggle show vertical dividers
+        Shift+A : Toggle alternate rows colors
+        |       : Toggle vertical dividers
         I       : Toggle rotation indicator
-        F3      : Toggle the handwritten letter style
+        F3      : Toggle handwritten lettering
         C       : Toggle corner style (round/plain)
-        S       : Toggle marker symbol
+        S       : Cycle marker symbol
         T       : Next theme
         Shift+T : Previous theme
       TEXT
@@ -660,11 +661,12 @@ module AppTranslations
         ]       : Kaartenbak
         Tab     : Volgend paneel
         Backtab : Vorig paneel
-        |       : Verticale scheidingslijnen tonen/verbergen
-        I       : Rotatie-indicator aan- of uitzetten
-        F3      : Schakel de handgeschreven lettervorm in of uit
-        C       : Wisselen hoekstijl (rond/recht)
-        S       : Wisselen markeersymbool
+        Shift+A : Afwisselende rijkleuren aan/uit
+        |       : Verticale scheidingslijnen aan/uit
+        I       : Rotatie-indicator aan/uit
+        F3      : Handgeschreven letterstijl aan/uit
+        C       : Hoekstijl wisselen (afgerond/recht)
+        S       : Volgend markeersymbool
         T       : Volgend thema
         Shift+T : Vorig thema
       TEXT

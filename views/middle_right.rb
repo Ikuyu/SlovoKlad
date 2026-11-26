@@ -155,6 +155,7 @@ def table_colors(active_table)
     active_border: settings.theme_item(:window_border),
     active_title: settings.theme_item(:window_title),
     foreground: settings.theme_item(:foreground),
+    background: settings.theme_item(:background),
     selected_fg: settings.theme_item(:selected_row_foreground),
     selected_bg: settings.theme_item(:selected_row_background),
     search_fg: settings.theme_item(:background),
@@ -414,6 +415,37 @@ def render_table_data(tui, frame, data_region, widths, colors, settings, outer_r
     visually_active
   )
 
+  if settings.alternate_rows_enabled && alternate_table_rows_allowed?
+    missing_rows = viewport[:page_size] - visible_cards.length
+
+    missing_rows.times do |index|
+      absolute_index = viewport[:offset] + visible_cards.length + index
+
+      alternate_background = (if absolute_index.odd?
+                                alternate_table_row_background(colors[:background],
+                                                               colors[:foreground])
+                              end)
+
+      row_style = alternate_background ? { bg: alternate_background } : {}
+      divider = @show_table_dividers == true ? ' │ ' : '   '
+
+      cells = [
+        widths[:checkbox],
+        widths[:divider],
+        widths[:term],
+        widths[:divider],
+        widths[:context],
+        widths[:divider],
+        widths[:meaning] + 3
+      ].each_with_index.map do |width, cell_index|
+        content = cell_index.odd? ? divider : ' ' * width.to_i
+        RatatuiRuby::Widgets::Cell.new(content: content)
+      end
+
+      table_rows << tui.row(cells: cells, style: row_style)
+    end
+  end
+
   table_region, scrollbar_region =
     split_table_content_region(data_region, outer_region)
 
@@ -446,6 +478,13 @@ def active_cards_for_table
   nodes = @tree&.respond_to?(:visible_nodes) ? @tree.visible_nodes : []
   node = nodes[@tree_state&.selected || 0]
   node && node[:type] == :deck && node[:object] ? (node[:object].cards || []) : []
+end
+
+def alternate_table_rows_allowed?
+  nodes = @tree&.respond_to?(:visible_nodes) ? @tree.visible_nodes : []
+  selected_node = nodes[@tree_state&.selected || 0]
+
+  selected_node&.dig(:type) == :deck
 end
 
 def table_search_regex(has_search)
@@ -550,7 +589,13 @@ def build_table_rows(tui, cards, offset, widths, colors, settings, search_regex,
     selected_row = !hide_table_cursor && selected == absolute_index
 
     marked_row = lookup ? lookup.key?(absolute_index) : selected_rows.include?(absolute_index)
-    row_style = table_row_style(selected_row, visually_active, colors)
+    alternate_background = if settings.alternate_rows_enabled &&
+                              alternate_table_rows_allowed? &&
+                              absolute_index.odd?
+                             alternate_table_row_background(colors[:background], colors[:foreground])
+                           end
+
+    row_style = table_row_style(selected_row, visually_active, colors, alternate_background)
 
     is_popup_active = defined?(@popup) && @popup && @popup.respond_to?(:active?) && @popup.active?
     is_command_mode = defined?(@active_focus) && @active_focus == :command_mode
@@ -1122,7 +1167,20 @@ def highlighted_table_cell_spans(raw_text, visual_text, base_style, highlight_st
   spans
 end
 
-def table_row_style(selected, visually_active, colors)
+def alternate_table_row_background(background, foreground)
+  return nil unless background.is_a?(String) && background.match?(/\A#(?:[0-9a-fA-F]{6})\z/)
+  return nil unless foreground.is_a?(String) && foreground.match?(/\A#(?:[0-9a-fA-F]{6})\z/)
+
+  rgb = background[1..].scan(/../).map { |value| value.to_i(16) }
+  target = foreground[1..].scan(/../).map { |value| value.to_i(16) }
+
+  adjusted = rgb.zip(target).map { |value, tone| (value + (tone - value) * 0.15).round }
+
+  format('#%02X%02X%02X', *adjusted)
+end
+
+def table_row_style(selected, visually_active, colors, alternate_background = nil)
+  return { bg: alternate_background } if !selected && alternate_background
   return {} unless selected
 
   # =========================================================================

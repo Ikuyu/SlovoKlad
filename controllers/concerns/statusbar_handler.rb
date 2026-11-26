@@ -472,9 +472,8 @@ module StatusbarInputHandler
     @statusbar_field.text = '' if defined?(@statusbar_field) && @statusbar_field
 
     # Return the window cursor focus parameters cleanly back onto your tree sidebar panel
-    @active_focus = @menu_origin_focus || :tree
-    @last_focus   = @active_focus
-    @menu_origin_focus = nil
+    @active_focus = %i[tree table].include?(@menu_origin_focus) ? @menu_origin_focus : :tree
+    @last_focus = @active_focus
 
     # Force an instantaneous frame repaint across all active dashboard panels!
     @tree.refresh_nodes if @tree.respond_to?(:refresh_nodes)
@@ -1227,7 +1226,7 @@ module StatusbarInputHandler
       @statusbar_field.cursor_index = 0 if @statusbar_field.respond_to?(:cursor_index=, true)
       @command_mode_visible = false if defined?(@command_mode_visible)
 
-      @active_focus = @menu_origin_focus || :tree
+      @active_focus = %i[tree table].include?(@menu_origin_focus) ? @menu_origin_focus : :tree
       @last_focus = @active_focus
       @menu_origin_focus = nil
       @library_dirty = true
@@ -1358,7 +1357,7 @@ module StatusbarInputHandler
       @command_mode_visible = false if defined?(@command_mode_visible)
 
       # Restore focus to the main window.
-      @active_focus = @menu_origin_focus || :tree
+      @active_focus = %i[tree table].include?(@menu_origin_focus) ? @menu_origin_focus : :tree
       @last_focus = @active_focus
       @menu_origin_focus = nil
 

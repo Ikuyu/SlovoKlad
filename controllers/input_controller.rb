@@ -1679,9 +1679,7 @@ def handle_command_mode_input(key, modifiers, has_ctrl_check, has_alt_check, has
 
     @active_focus = @menu_origin_focus || @last_focus || :tree
     @active_focus = :tree if %i[menu popup command_mode].include?(@active_focus)
-
-    @last_focus   = @active_focus
-
+    @last_focus = @active_focus
     @menu_origin_focus = nil
     @focus_before_help = nil if defined?(@focus_before_help)
     @command_mode_visible = false
@@ -1696,7 +1694,7 @@ def handle_command_mode_input(key, modifiers, has_ctrl_check, has_alt_check, has
     if defined?(@statusbar_field) && @statusbar_field && @statusbar_field.respond_to?(:handle_key, true)
       any_key = raw_key_str.sub(/\A:/, '')
 
-      is_control_shortcut = has_ctrl_check || has_alt_check || has_shift_check
+      is_control_shortcut = has_ctrl_check || has_alt_check
       is_nav_word_trigger = %w[backspace left right home end delete tab].include?(any_key.downcase)
 
       if is_control_shortcut || is_nav_word_trigger
@@ -1722,6 +1720,7 @@ def handle_global_input_shortcuts(key, modifiers, key_raw_check, has_ctrl_check,
 
   # Verwerk het wisselen van tabelscheidingslijnen apart.
   return true if handle_table_divider_shortcut(key_raw_check, popup_is_active)
+  return true if has_shift_check && key_raw_check.to_s.downcase == 'a' && !popup_is_active && toggle_alternate_rows
 
   # Handle the help shortcut separately to keep other global shortcuts clear.
   return true if handle_global_help_shortcut(

@@ -379,6 +379,30 @@ class RatatuiRubyApp
       char =~ /\A[\p{Latin}0-9\s[:punct:]]\z/
     end
 
+    if settings.alternate_rows_enabled
+      max_visible_rows.times do |index|
+        absolute_idx = @drill_viewport_start + index
+        next unless absolute_idx.odd?
+
+        alternate_bg = alternate_table_row_background(
+          settings.theme_item(:background),
+          settings.theme_item(:foreground)
+        )
+
+        next unless alternate_bg
+
+        frame.render_widget(
+          tui.paragraph(
+            text: ' ' * region.width,
+            style: { bg: alternate_bg }
+          ),
+          RatatuiRuby::Layout::Rect.new(
+            start_x, base_data_y + index, region.width, 1
+          )
+        )
+      end
+    end
+
     @cards_to_test.each_with_index do |card, idx|
       next if idx < @drill_viewport_start
 
@@ -394,7 +418,17 @@ class RatatuiRubyApp
       card_direction = drill_card_direction(card, idx, settings.study_strategy)
       is_question_a_term = card_direction == :front
       is_active_row = idx == @test_current_idx
-      row_style = is_active_row ? style_cursor : style_normal
+      row_style = if is_active_row
+                    style_cursor
+                  elsif settings.alternate_rows_enabled && idx.odd?
+                    alternate_bg = alternate_table_row_background(
+                      settings.theme_item(:background),
+                      settings.theme_item(:foreground)
+                    )
+                    alternate_bg ? style_normal.merge(bg: alternate_bg) : style_normal
+                  else
+                    style_normal
+                  end
 
       left_cell_text = ''
       right_cell_text = ''
@@ -437,14 +471,6 @@ class RatatuiRubyApp
         RatatuiRuby::Layout::Rect.new(text_start_x, current_row_y, left_col_w, 1)
       )
 
-      # Draw the column divider, keeping it perfectly aligned.
-      if is_active_row && @show_table_dividers == true
-        frame.render_widget(
-          tui.paragraph(text: '│', style: { fg: settings.theme_item(:window_border), bg: style_cursor[:bg] }),
-          RatatuiRuby::Layout::Rect.new(middle_sep_x, current_row_y, 1, 1)
-        )
-      end
-
       # =========================================================================
       # 🌲 RECHTERKOLOM: SOLID PARAGRAPH RENDERING (POPUP & TABLE PARITY)
       # =========================================================================
@@ -461,6 +487,37 @@ class RatatuiRubyApp
         RatatuiRuby::Widgets::Paragraph.new(text: right_line, alignment: :left,
                                             wrap: false),
         RatatuiRuby::Layout::Rect.new(right_col_x + 1, current_row_y, right_text_max_w, 1)
+      )
+    end
+
+    return unless @show_table_dividers == true
+
+    max_visible_rows.times do |line_offset|
+      absolute_idx = @drill_viewport_start + line_offset
+      is_selected = absolute_idx == @test_current_idx
+
+      divider_bg = if is_selected
+                     style_cursor[:bg]
+                   elsif settings.alternate_rows_enabled && absolute_idx.odd?
+                     alternate_table_row_background(
+                       settings.theme_item(:background),
+                       settings.theme_item(:foreground)
+                     ) || style_normal[:bg]
+                   else
+                     style_normal[:bg]
+                   end
+
+      frame.render_widget(
+        tui.paragraph(
+          text: '│',
+          style: {
+            fg: settings.theme_item(:window_border),
+            bg: divider_bg
+          }
+        ),
+        RatatuiRuby::Layout::Rect.new(
+          middle_sep_x, base_data_y + line_offset, 1, 1
+        )
       )
     end
   end

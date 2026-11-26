@@ -23,7 +23,6 @@ module NavigationInputHandler
 
     # has_alt = modifiers.include?('alt') || modifiers.include?('meta') || modifiers.include?('option')
     has_ctrl = modifiers.include?('ctrl') || modifiers.include?('control')
-    # has_shift = modifiers.include?('shift')
 
     # 🎯 ENCAPSULATED COUPLING: Route directly into the clean clipboard engine
     return true if handle_flashcard_clipboard_operations(key, has_ctrl)
@@ -222,6 +221,7 @@ module NavigationInputHandler
       @statusbar_saved_table_selection ||= @statusbar_saved_table_selection_backup
 
       @menu_origin_focus = @active_focus
+      @cockpit_panel_anchor = @active_focus
       @active_focus = :command_mode
       @command_mode_visible = true
 
@@ -306,7 +306,17 @@ module NavigationInputHandler
       @rotation_indicator_countdown = 0
     end
 
-    settings.rotation_indicator_enabled ? SoundManager.play(:toggle) : SoundManager.play(:off)
+    SoundManager.play(settings.rotation_indicator_enabled ? :toggle : :off)
+    settings.save
+
+    @tree.refresh_nodes if @tree.respond_to?(:refresh_nodes)
+  end
+
+  def toggle_alternate_rows
+    settings = AppConfig.settings
+    settings.alternate_rows_enabled = !settings.alternate_rows_enabled
+
+    SoundManager.play(:toggle)
     settings.save
 
     @tree.refresh_nodes if @tree.respond_to?(:refresh_nodes)

@@ -551,20 +551,6 @@ class RatatuiRubyApp
       char =~ /\A[\p{Latin}0-9\s[:punct:]]\z/
     end
 
-    # Verticale divider over de volledige tabelhoogte
-    if @show_table_dividers == true
-      table_height = max_visible_rows + 1
-
-      table_height.times do |line_offset|
-        frame.render_widget(
-          tui.paragraph(text: '│', style: style_dimmed),
-          RatatuiRuby::Layout::Rect.new(
-            middle_sep_x, base_data_y + line_offset, 1, 1
-          )
-        )
-      end
-    end
-
     # Show the first card at the top and the newest card at the bottom.
     # Kaarten tekenen met dynamische scrollpositie
     scroll_y = geometry[:scroll_y]
@@ -574,12 +560,47 @@ class RatatuiRubyApp
         original_idx < scroll_y + max_visible_rows
     end
 
+    if settings.alternate_rows_enabled
+      max_visible_rows.times do |index|
+        absolute_idx = scroll_y + index
+        next unless absolute_idx.odd?
+
+        alternate_bg = alternate_table_row_background(
+          settings.theme_item(:background),
+          settings.theme_item(:foreground)
+        )
+
+        next unless alternate_bg
+
+        frame.render_widget(
+          tui.paragraph(
+            text: ' ' * region.width,
+            style: { bg: alternate_bg }
+          ),
+          RatatuiRuby::Layout::Rect.new(
+            start_x, base_data_y + index, region.width, 1
+          )
+        )
+      end
+    end
+
     visible_cards.each do |card, original_idx|
       screen_idx = original_idx - scroll_y
       current_row_y = base_data_y + screen_idx
 
       is_active_row = original_idx == @user_card_index
-      row_style = is_active_row ? style_cursor : style_normal
+
+      row_style = if is_active_row
+                    style_cursor
+                  elsif settings.alternate_rows_enabled && original_idx.odd?
+                    alternate_bg = alternate_table_row_background(
+                      settings.theme_item(:background),
+                      settings.theme_item(:foreground)
+                    )
+                    alternate_bg ? style_normal.merge(bg: alternate_bg) : style_normal
+                  else
+                    style_normal
+                  end
 
       card_text = card[:term].to_s
       meaning_text = is_active_row ? card[:meaning].to_s : ''
@@ -590,14 +611,12 @@ class RatatuiRubyApp
         meaning_text, right_text_max_w
       )
 
-      if is_active_row
-        frame.render_widget(
-          tui.paragraph(text: ' ' * region.width, style: style_cursor),
-          RatatuiRuby::Layout::Rect.new(
-            start_x, current_row_y, region.width, 1
-          )
+      frame.render_widget(
+        tui.paragraph(text: ' ' * region.width, style: row_style),
+        RatatuiRuby::Layout::Rect.new(
+          start_x, current_row_y, region.width, 1
         )
-      end
+      )
 
       if is_active_row && @show_table_dividers == true
         frame.render_widget(
@@ -657,6 +676,39 @@ class RatatuiRubyApp
         ),
         RatatuiRuby::Layout::Rect.new(
           right_col_x + 1, current_row_y, right_text_max_w, 1
+        )
+      )
+    end
+
+    return unless @show_table_dividers == true
+
+    table_height = max_visible_rows + 1
+
+    table_height.times do |line_offset|
+      absolute_idx = scroll_y + line_offset
+      is_selected = absolute_idx == @user_card_index
+
+      divider_bg = if is_selected
+                     style_cursor[:bg]
+                   elsif settings.alternate_rows_enabled && absolute_idx.odd?
+                     alternate_table_row_background(
+                       settings.theme_item(:background),
+                       settings.theme_item(:foreground)
+                     ) || style_normal[:bg]
+                   else
+                     style_normal[:bg]
+                   end
+
+      frame.render_widget(
+        tui.paragraph(
+          text: '│',
+          style: {
+            fg: settings.theme_item(:window_border),
+            bg: divider_bg
+          }
+        ),
+        RatatuiRuby::Layout::Rect.new(
+          middle_sep_x, base_data_y + line_offset, 1, 1
         )
       )
     end
