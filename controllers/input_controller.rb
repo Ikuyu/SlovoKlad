@@ -218,7 +218,6 @@ class RatatuiRubyApp
     elsif defined?(@focus_before_help) && @focus_before_help == :menu
       @active_focus        = :menu
       @last_focus          = :menu
-      @menu_dropdown_open  = false
     else
       target_panel = if defined?(@cockpit_panel_anchor) && !@cockpit_panel_anchor.nil?
                        @cockpit_panel_anchor

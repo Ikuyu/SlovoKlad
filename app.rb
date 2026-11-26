@@ -162,7 +162,6 @@ class RatatuiRubyApp
     return unless settings.theme.to_sym == :terminal
 
     resolver = TerminalThemeResolver.new
-    terminal_colors = resolver.load_colors
 
     resolved = resolver.resolve(
       AppThemes::THEME_DATA[:terminal],

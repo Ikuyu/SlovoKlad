@@ -393,9 +393,11 @@ end
 def render_table_data(tui, frame, data_region, widths, colors, settings, outer_region)
   cards = active_cards_for_table
   has_search = @search_matches && @search_matches.any?
-  visually_active = @active_focus == :table ||
-                    (@active_focus == :replace_mode && @last_focus == :table)
-
+  table_popup_active = defined?(@popup) && @popup &&
+                       @popup.respond_to?(:active?) && @popup.active?
+  visually_active = !table_popup_active &&
+                    (@active_focus == :table ||
+                     (@active_focus == :replace_mode && @last_focus == :table))
   search_regex = table_search_regex(has_search)
   viewport = table_viewport(cards.length, data_region.height.to_i, has_search)
 
@@ -543,7 +545,8 @@ def build_table_rows(tui, cards, offset, widths, colors, settings, search_regex,
 
   cards.each_with_index.map do |card, screen_index|
     absolute_index = offset + screen_index
-    hide_table_cursor = %i[menu popup].include?(@active_focus)
+    hide_table_cursor = %i[menu popup].include?(@active_focus) ||
+                        (defined?(@popup) && @popup&.active?)
     selected_row = !hide_table_cursor && selected == absolute_index
 
     marked_row = lookup ? lookup.key?(absolute_index) : selected_rows.include?(absolute_index)

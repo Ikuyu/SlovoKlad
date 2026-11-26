@@ -1051,7 +1051,7 @@ class PopupView
 
     current_chunk_idx += 1
 
-    if fields.key?(:case_sensitive) || fields.key?(:regex) || fields.key?(:global) || fields.key?(:folding)
+    if fields.key?(:case_sensitive) || fields.key?(:regex) || fields.key?(:ignore_accents) || fields.key?(:global)
       current_chunk_idx = render_search_replace_checkboxes(frame, form_chunks, current_chunk_idx, fields, focus,
                                                            active_text)
     end
@@ -1066,12 +1066,8 @@ class PopupView
     definitions = [
       [:case_sensitive, settings.language_string(:search_case_sensitive)],
       [:regex, settings.language_string(:search_regex)],
-      [:global, settings.language_string(:search_all)],
-      [:folding, begin
-        settings.language_string(:search_folding)
-      rescue StandardError
-        'Folding'
-      end]
+      [:ignore_accents, settings.language_string(:search_ignore_accents)],
+      [:global, settings.language_string(:search_all)]
     ].select { |key, _label| fields[key] }
 
     constraints = []

@@ -747,7 +747,7 @@ class RatatuiRubyApp
       # De Tree-cursor is alleen zichtbaar wanneer de Tree daadwerkelijk focus heeft.
       # Bij F10 blijft de selectiepositie behouden, maar verdwijnt de highlight.
 
-      hide_tree_cursor = %i[menu popup].include?(@active_focus)
+      hide_tree_cursor = %i[menu popup].include?(@active_focus) || popup_is_displayed
       is_selected = !hide_tree_cursor && (index == current_cursor_row)
 
       line = build_tree_spans(

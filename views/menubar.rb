@@ -44,7 +44,7 @@ class MenuBarView
       # 🎯 COCKPIT PARITEIT: Controleer of de geopende popup daadwerkelijk uit het menu is ontstaan
       popup_from_menu =
         popup_is_displayed &&
-        app.instance_variable_get(:@menu_origin_focus) == :menu
+        app.instance_variable_get(:@menu_dropdown_open) == true
 
       # Het menu is visueel open als hij de focus heeft óf als er een popup vanuit het menu openstaat
       menu_is_visually_open = (state[:active_focus].to_s == 'menu') || popup_from_menu
@@ -108,7 +108,7 @@ class MenuBarView
 
       popup_from_menu =
         popup_is_active &&
-        app.instance_variable_get(:@menu_origin_focus) == :menu
+        app.instance_variable_get(:@menu_dropdown_open) == true
 
       if popup_from_menu
         {

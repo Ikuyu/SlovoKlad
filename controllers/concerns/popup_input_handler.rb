@@ -144,16 +144,16 @@ module PopupInputHandler
       label: settings.language_string(:search_regex), checked: false
     )
 
+    fields[:ignore_accents] = RatinCheckbox.new(
+      label: settings.language_string(:search_ignore_accents), checked: false
+    )
+
     # Add the 'All' checkbox only when the table has focus.
     if @active_focus == :table || @active_focus == :replace_mode && @last_focus == :table
       fields[:global] = RatinCheckbox.new(
         label: ' All decks', checked: false
       )
     end
-
-    fields[:folding] = RatinCheckbox.new(
-      label: settings.language_string(:search_folding), checked: false
-    )
 
     fields # ➔ Bevat nu 100% pure widgets!
   end
@@ -178,19 +178,19 @@ module PopupInputHandler
 
     is_case_checked = popup_case_sensitive_value(data[:case_sensitive])
     is_regex_checked = popup_case_sensitive_value(data[:regex])
-    is_folding_checked = popup_case_sensitive_value(data[:folding])
+    is_ignore_accents_checked = popup_case_sensitive_value(data[:ignore_accents])
     is_global_checked = popup_case_sensitive_value(data[:global])
 
     @tree_regex_mode = is_regex_checked if origin_focus == :tree
     @table_regex_mode = is_regex_checked if origin_focus != :tree
-    @tree_folding = is_folding_checked if origin_focus == :tree
-    @table_folding = is_folding_checked if origin_focus != :tree
+    @tree_ignore_accents = is_ignore_accents_checked if origin_focus == :tree
+    @table_ignore_accents = is_ignore_accents_checked if origin_focus != :tree
 
     begin
       if origin_focus == :tree
         process_tree_search_replace_submission(
           query_text, replace_text, is_replace_trigger, is_case_checked,
-          is_folding_checked, origin_focus, remembered_tree_path
+          is_ignore_accents_checked, origin_focus, remembered_tree_path
         )
       else
         process_table_search_replace_submission(
@@ -255,11 +255,11 @@ module PopupInputHandler
   end
 
   def process_tree_search_replace_submission(query_text, replace_text, is_replace_trigger, is_case_checked,
-                                             is_folding_checked, origin_focus, remembered_tree_path)
+                                             is_ignore_accents_checked, origin_focus, remembered_tree_path)
     @last_tree_search_query = query_text
     @last_replace_text = replace_text if is_replace_trigger
     @tree_case_sensitive = is_case_checked
-    @tree_folding = is_folding_checked
+    @tree_ignore_accents = is_ignore_accents_checked
     @tree_search_matches = []
     @tree_search_current_idx = 0
 
@@ -274,19 +274,19 @@ module PopupInputHandler
 
   def build_tree_search_matches(query_text, is_case_checked)
     regex_mode = !!@tree_regex_mode
-    folding = !!@tree_folding && !regex_mode
+    ignore_accents = !!@tree_ignore_accents && !regex_mode
 
     search_regex = if regex_mode
                      flags = is_case_checked ? 0 : Regexp::IGNORECASE
                      Regexp.new(query_text.to_s, flags)
                    else
-                     search_str = normalize_target_scripts(query_text, is_case_checked, folding)
+                     search_str = normalize_target_scripts(query_text, is_case_checked, ignore_accents)
                      search_str = search_str.downcase unless is_case_checked
                      nil
                    end
 
     match_proc = lambda do |name_field|
-      norm_field = normalize_target_scripts(name_field, is_case_checked, folding)
+      norm_field = normalize_target_scripts(name_field, is_case_checked, ignore_accents)
 
       if regex_mode
         regex_text = norm_field.unicode_normalize(:nfd)
@@ -365,13 +365,13 @@ module PopupInputHandler
     if is_global_checked && is_replace_trigger
       @global_search_case_sensitive = is_case_checked
       @global_search_regex_mode = !!@table_regex_mode
-      @global_search_folding = !!@table_folding
+      @global_search_ignore_accents = !!@table_ignore_accents
 
       perform_global_search(
         query_text,
         case_sensitive: is_case_checked,
         regex_mode: !!@table_regex_mode,
-        folding: !!@table_folding
+        ignore_accents: !!@table_ignore_accents
       )
 
       if @global_search_matches.any?
@@ -388,7 +388,7 @@ module PopupInputHandler
     cards_to_search = is_global_checked ? all_cards_in_all_decks : active_cards_for_search
 
     build_table_search_matches(
-      cards_to_search, query_text, is_case_checked, @table_folding
+      cards_to_search, query_text, is_case_checked, @table_ignore_accents
     )
 
     if @search_matches.any?
@@ -410,14 +410,14 @@ module PopupInputHandler
     end
   end
 
-  def build_table_search_matches(cards_to_search, query_text, is_case_checked, folding = false)
+  def build_table_search_matches(cards_to_search, query_text, is_case_checked, ignore_accents = false)
     regex_mode = !!@table_regex_mode
 
     search_regex = if regex_mode
                      flags = is_case_checked ? 0 : Regexp::IGNORECASE
                      Regexp.new(query_text.to_s, flags)
                    else
-                     build_script_insensitive_regex(query_text, is_case_checked, folding)
+                     build_script_insensitive_regex(query_text, is_case_checked, ignore_accents)
                    end
 
     cards_to_search.each_with_index do |card, idx|
