@@ -190,6 +190,10 @@ class RatatuiRubyApp
     # Onthoud exact welk paneel op de achtergrond actief was vòòr de wipe
     backup_origin = defined?(@cockpit_panel_anchor) && @cockpit_panel_anchor ? @cockpit_panel_anchor : (origin_focus || :tree)
 
+    return_to_command_mode =
+      (defined?(@last_focus) && @last_focus == :command_mode) ||
+      (defined?(@focus_before_help) && @focus_before_help == :command_mode)
+
     handle_popup_input(key, modifiers)
 
     if defined?(@focus_before_help) && @focus_before_help == :study_focus_mode
@@ -198,12 +202,13 @@ class RatatuiRubyApp
       @active_focus = :study_focus_mode
       @last_focus   = :study_focus_mode
       @focus_before_help = nil
-    elsif (defined?(@last_focus) && @last_focus == :command_mode) ||
-          (defined?(@focus_before_help) && @focus_before_help == :command_mode)
-
+    elsif return_to_command_mode
       @active_focus = :command_mode
       @last_focus = :command_mode
       @command_mode_visible = true
+
+      # De oorspronkelijke bestemming blijft behouden.
+      @menu_origin_focus ||= backup_origin if %i[tree table].include?(backup_origin)
 
       @statusbar_field.is_focused = true if defined?(@statusbar_field) && @statusbar_field
 
@@ -213,8 +218,7 @@ class RatatuiRubyApp
     elsif defined?(@focus_before_help) && @focus_before_help == :menu
       @active_focus        = :menu
       @last_focus          = :menu
-      @menu_dropdown_open  = true
-      @menu_origin_focus   = nil
+      @menu_dropdown_open  = false
     else
       target_panel = if defined?(@cockpit_panel_anchor) && !@cockpit_panel_anchor.nil?
                        @cockpit_panel_anchor
@@ -239,9 +243,8 @@ class RatatuiRubyApp
 
     @focus_before_help = nil if instance_variable_defined?(:@focus_before_help)
 
-    if @active_focus != :command_mode
-      @menu_origin_focus = nil if instance_variable_defined?(:@menu_origin_focus)
-      @cockpit_panel_anchor = nil if instance_variable_defined?(:@cockpit_panel_anchor)
+    if !%i[command_mode menu].include?(@active_focus) && instance_variable_defined?(:@cockpit_panel_anchor)
+      @cockpit_panel_anchor = nil
     end
 
     @tree.refresh_nodes if @tree.respond_to?(:refresh_nodes)

@@ -1,6 +1,6 @@
 module SearchInputHandler
   # Generates a regular expression that treats accents as optional ONLY on targeted scripts
-  def build_script_insensitive_regex(query_text, case_sensitive = false)
+  def build_script_insensitive_regex(query_text, case_sensitive = false, folding = false)
     return nil if query_text.to_s.empty?
 
     query = query_text.to_s.unicode_normalize(:nfd)
@@ -9,15 +9,19 @@ module SearchInputHandler
 
     query.each_char do |char|
       if char.match?(/\A\p{M}\z/)
-        # Markeringen na doeltekens zijn optioneel.
-        # Preserve marks used by other scripts.
-        source << Regexp.escape(char) unless previous_target
+        source << Regexp.escape(char) unless folding || previous_target
         next
       end
 
       is_target = target_script_char?(char)
       source << Regexp.escape(char)
-      source << '\p{M}*' if is_target
+
+      if folding || is_target
+        source << '\p{M}*'
+      elsif char.match?(/\A[a-zA-Z]\z/)
+        source << '(?!\p{M})'
+      end
+
       previous_target = is_target
     end
 
@@ -28,7 +32,7 @@ module SearchInputHandler
     char.match?(/\A[\p{Cyrillic}\p{Han}\p{Hiragana}\p{Katakana}]\z/)
   end
 
-  def normalize_target_scripts(text, case_sensitive = false)
+  def normalize_target_scripts(text, case_sensitive = false, folding = false)
     return '' if text.nil?
 
     normalized = text.to_s.unicode_normalize(:nfd)
@@ -37,7 +41,7 @@ module SearchInputHandler
 
     normalized.each_char do |char|
       if char.match?(/\A\p{M}\z/)
-        result << char unless previous_target
+        result << char unless folding || previous_target
         next
       end
 
@@ -50,7 +54,7 @@ module SearchInputHandler
   end
 
   # center_on_match centreert de zichtbare tekst en kort ze in (truncate)
-  def center_on_match(full_text, query_text, max_width, case_sensitive = false)
+  def center_on_match(full_text, query_text, max_width, case_sensitive = false, folding = false)
     full_str  = full_text.to_s
     query_str = query_text.to_s
 
@@ -66,7 +70,7 @@ module SearchInputHandler
                      flags = case_sensitive ? 0 : Regexp::IGNORECASE
                      Regexp.new(query_str, flags)
                    else
-                     build_script_insensitive_regex(query_str, case_sensitive)
+                     build_script_insensitive_regex(query_str, case_sensitive, folding)
                    end
 
     # Normalize each original character separately and map every
@@ -95,21 +99,6 @@ module SearchInputHandler
       match = nfd_full.match(search_regex)
 
       return full_str[0, max_width] unless match
-
-      match_start_nfd = match.begin(0)
-      match_end_nfd   = match.end(0)
-
-      if match_start_nfd == match_end_nfd
-        match_start = if match_start_nfd < nfd_to_original.length
-                        nfd_to_original[match_start_nfd]
-                      else
-                        full_str.length
-                      end
-        match_end = match_start
-      else
-        match_start = nfd_to_original[match_start_nfd]
-        match_end   = nfd_to_original[match_end_nfd - 1] + 1
-      end
     end
 
     # Fall back safely if no match is found
@@ -190,6 +179,7 @@ module SearchInputHandler
     @last_replace_text        = nil
     @search_query             = '' if defined?(@search_query)
     @table_case_sensitive     = nil
+    @table_folding            = false
     @last_case_sensitive      = nil
     @last_regex               = nil
 
@@ -197,7 +187,8 @@ module SearchInputHandler
     @tree_search_current_idx  = nil
     @last_tree_search_query   = nil
     @tree_case_sensitive      = nil
-    @selected_table_rows      = [] if defined?(@selected_table_rows)
+    @tree_folding = false
+    @selected_table_rows = [] if defined?(@selected_table_rows)
 
     @tree.refresh_nodes if @tree.respond_to?(:refresh_nodes)
     true
@@ -474,14 +465,14 @@ module SearchInputHandler
     true
   end
 
-  def execute_global_replace_all(query_text, replace_text, case_sensitive: false, regex_mode: false)
+  def execute_global_replace_all(query_text, replace_text, case_sensitive: false, regex_mode: false, folding: false)
     return if query_text.to_s.strip.empty?
 
     search_regex = if regex_mode
                      flags = case_sensitive ? 0 : Regexp::IGNORECASE
                      Regexp.new(query_text.to_s, flags)
                    else
-                     build_script_insensitive_regex(query_text, case_sensitive)
+                     build_script_insensitive_regex(query_text, case_sensitive, folding)
                    end
 
     snapshot_saved = false
@@ -547,7 +538,8 @@ module SearchInputHandler
       @global_search_query,
       @last_replace_text,
       case_sensitive: !!@global_search_case_sensitive,
-      regex_mode: !!@global_search_regex_mode
+      regex_mode: !!@global_search_regex_mode,
+      folding: !!@global_search_folding
     )
 
     true
@@ -637,12 +629,13 @@ module SearchInputHandler
     return false if raw_query.to_s.empty?
 
     regex_mode = is_tree_mode ? !!@tree_regex_mode : !!@table_regex_mode
+    folding = is_tree_mode ? !!@tree_folding : !!@table_folding
 
     regex = if regex_mode
               flags = is_strict ? 0 : Regexp::IGNORECASE
               Regexp.new(raw_query.to_s, flags)
             else
-              build_script_insensitive_regex(raw_query, is_strict)
+              build_script_insensitive_regex(raw_query, is_strict, folding)
             end
 
     safe_replace_str =
@@ -766,12 +759,13 @@ module SearchInputHandler
     return false if raw_query.to_s.empty?
 
     regex_mode = is_tree_mode ? !!@tree_regex_mode : !!@table_regex_mode
+    folding = is_tree_mode ? !!@tree_folding : !!@table_folding
 
     regex = if regex_mode
               flags = is_strict ? 0 : Regexp::IGNORECASE
               Regexp.new(raw_query.to_s, flags)
             else
-              build_script_insensitive_regex(raw_query, is_strict)
+              build_script_insensitive_regex(raw_query, is_strict, folding)
             end
 
     safe_replace_str =
@@ -1016,7 +1010,6 @@ module SearchInputHandler
     collect_tree_search_matches(query_text)
 
     if @tree_search_matches.any?
-      trigger_system_beep if respond_to?(:trigger_system_beep)
       finalize_tree_search_matches
     else
       @tree_search_matches = nil
@@ -1038,7 +1031,8 @@ module SearchInputHandler
     return if query.empty?
 
     # Selectieve normalisatie op de zoekopdracht
-    visual_query = normalize_target_scripts(query, is_strict)
+    folding = (@tree_folding == true)
+    visual_query = normalize_target_scripts(query, is_strict, folding)
 
     nodes_to_search =
       if @tree.respond_to?(:all_nodes)
@@ -1054,7 +1048,7 @@ module SearchInputHandler
     nodes_to_search.each do |node|
       name = node[:name].to_s
       # Selectieve normalisatie op de boom-node namen
-      norm_name = normalize_target_scripts(name, is_strict)
+      norm_name = normalize_target_scripts(name, is_strict, folding)
 
       matched = norm_name.include?(visual_query) &&
                 !norm_name.include?(",#{visual_query.delete_suffix(';')}")
@@ -1169,7 +1163,7 @@ module SearchInputHandler
     sync_indices_from_tree_path if respond_to?(:sync_indices_from_tree_path)
   end
 
-  def perform_global_search(query_text, case_sensitive: false, regex_mode: false)
+  def perform_global_search(query_text, case_sensitive: false, regex_mode: false, folding: false)
     @global_search_active = true
     @global_search_query = query_text.to_s.strip
     @global_search_matches = []
@@ -1185,7 +1179,8 @@ module SearchInputHandler
                    else
                      build_script_insensitive_regex(
                        query_text,
-                       case_sensitive
+                       case_sensitive,
+                       folding
                      )
                    end
 

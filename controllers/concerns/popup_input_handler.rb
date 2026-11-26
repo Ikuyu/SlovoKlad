@@ -151,6 +151,10 @@ module PopupInputHandler
       )
     end
 
+    fields[:folding] = RatinCheckbox.new(
+      label: settings.language_string(:search_folding), checked: false
+    )
+
     fields # ➔ Bevat nu 100% pure widgets!
   end
 
@@ -174,21 +178,24 @@ module PopupInputHandler
 
     is_case_checked = popup_case_sensitive_value(data[:case_sensitive])
     is_regex_checked = popup_case_sensitive_value(data[:regex])
+    is_folding_checked = popup_case_sensitive_value(data[:folding])
     is_global_checked = popup_case_sensitive_value(data[:global])
 
     @tree_regex_mode = is_regex_checked if origin_focus == :tree
     @table_regex_mode = is_regex_checked if origin_focus != :tree
+    @tree_folding = is_folding_checked if origin_focus == :tree
+    @table_folding = is_folding_checked if origin_focus != :tree
 
     begin
       if origin_focus == :tree
         process_tree_search_replace_submission(
           query_text, replace_text, is_replace_trigger, is_case_checked,
-          origin_focus, remembered_tree_path
+          is_folding_checked, origin_focus, remembered_tree_path
         )
       else
         process_table_search_replace_submission(
-          query_text, replace_text, is_replace_trigger, is_case_checked,
-          is_global_checked
+          query_text, replace_text, is_replace_trigger,
+          is_case_checked, is_global_checked
         )
       end
 
@@ -248,10 +255,11 @@ module PopupInputHandler
   end
 
   def process_tree_search_replace_submission(query_text, replace_text, is_replace_trigger, is_case_checked,
-                                             origin_focus, remembered_tree_path)
+                                             is_folding_checked, origin_focus, remembered_tree_path)
     @last_tree_search_query = query_text
     @last_replace_text = replace_text if is_replace_trigger
     @tree_case_sensitive = is_case_checked
+    @tree_folding = is_folding_checked
     @tree_search_matches = []
     @tree_search_current_idx = 0
 
@@ -266,18 +274,19 @@ module PopupInputHandler
 
   def build_tree_search_matches(query_text, is_case_checked)
     regex_mode = !!@tree_regex_mode
+    folding = !!@tree_folding && !regex_mode
 
     search_regex = if regex_mode
                      flags = is_case_checked ? 0 : Regexp::IGNORECASE
                      Regexp.new(query_text.to_s, flags)
                    else
-                     search_str = normalize_target_scripts(query_text, is_case_checked)
+                     search_str = normalize_target_scripts(query_text, is_case_checked, folding)
                      search_str = search_str.downcase unless is_case_checked
                      nil
                    end
 
     match_proc = lambda do |name_field|
-      norm_field = normalize_target_scripts(name_field, is_case_checked)
+      norm_field = normalize_target_scripts(name_field, is_case_checked, folding)
 
       if regex_mode
         regex_text = norm_field.unicode_normalize(:nfd)
@@ -356,11 +365,13 @@ module PopupInputHandler
     if is_global_checked && is_replace_trigger
       @global_search_case_sensitive = is_case_checked
       @global_search_regex_mode = !!@table_regex_mode
+      @global_search_folding = !!@table_folding
 
       perform_global_search(
         query_text,
         case_sensitive: is_case_checked,
-        regex_mode: !!@table_regex_mode
+        regex_mode: !!@table_regex_mode,
+        folding: !!@table_folding
       )
 
       if @global_search_matches.any?
@@ -374,8 +385,11 @@ module PopupInputHandler
       return
     end
 
-    cards_to_search = active_cards_for_search
-    build_table_search_matches(cards_to_search, query_text, is_case_checked)
+    cards_to_search = is_global_checked ? all_cards_in_all_decks : active_cards_for_search
+
+    build_table_search_matches(
+      cards_to_search, query_text, is_case_checked, @table_folding
+    )
 
     if @search_matches.any?
       activate_table_search_replace(is_replace_trigger)
@@ -396,14 +410,14 @@ module PopupInputHandler
     end
   end
 
-  def build_table_search_matches(cards_to_search, query_text, is_case_checked)
+  def build_table_search_matches(cards_to_search, query_text, is_case_checked, folding = false)
     regex_mode = !!@table_regex_mode
 
     search_regex = if regex_mode
                      flags = is_case_checked ? 0 : Regexp::IGNORECASE
                      Regexp.new(query_text.to_s, flags)
                    else
-                     build_script_insensitive_regex(query_text, is_case_checked)
+                     build_script_insensitive_regex(query_text, is_case_checked, folding)
                    end
 
     cards_to_search.each_with_index do |card, idx|
@@ -411,10 +425,10 @@ module PopupInputHandler
       nfd_context = card.context.to_s.unicode_normalize(:nfd)
       nfd_meaning = card.meaning.to_s.unicode_normalize(:nfd)
 
-      match_found = nfd_term.match?(search_regex) ||
-                    nfd_context.match?(search_regex) ||
-                    nfd_meaning.match?(search_regex)
-
+      term_match = nfd_term.match(search_regex)
+      context_match = nfd_context.match(search_regex)
+      meaning_match = nfd_meaning.match(search_regex)
+      match_found = term_match || context_match || meaning_match
       @search_matches << idx if match_found
     end
   end
@@ -468,8 +482,10 @@ module PopupInputHandler
          (defined?(@focus_before_help) && @focus_before_help == :command_mode)
 
         @active_focus = :command_mode
-        @last_focus = :command_mode
         @command_mode_visible = true
+
+        # Behoud de oorspronkelijke bestemming (:table of :tree).
+        # @last_focus mag hier niet de oorspronkelijke bestemming vervangen.
 
         @statusbar_field.is_focused = true if defined?(@statusbar_field) && @statusbar_field
 
@@ -479,7 +495,7 @@ module PopupInputHandler
         @last_focus = :study_focus_mode
       elsif is_menu_popup
         @active_focus = :menu
-        @last_focus = :menu
+        @last_focus = @menu_origin_focus || :tree
         @menu_dropdown_open = true if defined?(@menu_dropdown_open)
       else
         # Reguliere formulieren vallen terug op hun historische focus
@@ -769,7 +785,8 @@ module PopupInputHandler
     mods = Array(modifiers).map { |m| m.to_s.downcase }
     {
       alt: mods.include?('alt') || mods.include?('meta') || mods.include?('option'),
-      ctrl: mods.include?('ctrl') || mods.include?('control')
+      ctrl: mods.include?('ctrl') || mods.include?('control'),
+      shift: mods.include?('shift')
     }
   end
 
@@ -785,7 +802,7 @@ module PopupInputHandler
     when 'tab'
       return :continue if @active_focus == :tree
 
-      cycle_form_field(popup, fields, field_keys, current_key, 1)
+      cycle_form_field(popup, fields, field_keys, current_key, mods[:shift] ? -1 : 1)
       true
     when 'n', 'ctrl+n', 'control+n', 'ctrl_n', 'control_n'
       return :continue unless ctrl_n

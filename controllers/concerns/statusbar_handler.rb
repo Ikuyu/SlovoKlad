@@ -1941,54 +1941,52 @@ module StatusbarInputHandler
 
   def set_theme_via_command(argument)
     settings = AppConfig.settings
-
-    normalized_theme = argument.strip.downcase
+    normalized_theme = argument.to_s.strip.downcase
 
     if normalized_theme.empty?
-      # 🟢 METADATA LOOKUP LINK: Check if a custom theme name was stored in settings
-      active_name = if settings.respond_to?(:custom_theme_name) && settings.custom_theme_name
-                      settings.custom_theme_name
-                    elsif settings.instance_variable_defined?(:@custom_theme_name)
-                      settings.instance_variable_get(:@custom_theme_name)
-                    else
-                      settings.respond_to?(:theme) ? settings.theme : 'default'
-                    end
+      active_theme = settings.theme.to_s.gsub(/\A:/, '').to_sym
 
-      if respond_to?(:trigger_statusbar_message)
-        trigger_statusbar_message(
-          "#{settings.language_string(:statusbar_show_active_theme)}: #{active_name}.",
-          type: :info
-        )
-      end
+      active_name =
+        if settings.custom_theme_name && !settings.custom_theme_name.to_s.strip.empty?
+          settings.custom_theme_name
+        elsif AppConfig::THEMES.key?(active_theme)
+          AppConfig::THEMES.dig(active_theme, :label)
+        else
+          active_theme.to_s
+        end
+
+      trigger_statusbar_message(
+        "Active theme: #{active_name}.",
+        type: :info
+      )
 
       @statusbar_field.text = '' if defined?(@statusbar_field) && @statusbar_field
       @active_focus = :command_mode
       true
     else
       theme_aliases = {
-        'classic' => :default,
-        'standard' => :default,
-        'monochrome' => :default,
-        'mono' => :default,
-        'dark' => :default,
+        'default' => :dark,
+        'classic' => :dark,
+        'standard' => :dark,
+        'monochrome' => :bw,
+        'blackwhite' => :bw,
+        'mono' => :bw,
         'ibm' => :cga,
         'retro' => :cga,
-        'light' => :tos,
         'green' => :crt,
         'blue' => :borland,
-        'purple' => :dracula,
         'lila' => :c64,
         'brown' => :amber,
         'yellow' => :amber,
         'orange' => :amber,
-        'teletext' => :teletext,
-        'atari' => :tos
+        'teletext' => :ttx,
+        'atari' => :tos,
+        'gray' => :tos
       }
 
-      normalized_input = argument.downcase
       theme_sym = theme_aliases.fetch(
-        normalized_input,
-        normalized_input.to_sym
+        normalized_theme,
+        normalized_theme.to_sym
       )
 
       theme_exists =
@@ -1996,38 +1994,37 @@ module StatusbarInputHandler
         defined?(AppThemes::THEME_DATA) &&
         AppThemes::THEME_DATA.key?(theme_sym)
 
-      theme_exists ||= %i[default cga julia crt amber borland dracula ttx c64 tos terminal].include?(theme_sym)
+      theme_exists ||= AppConfig::THEMES.key?(theme_sym)
 
       if theme_exists
         return false if setting_already_in_use?(:theme, theme_sym.to_s)
 
-        if settings.respond_to?(:theme=)
-          settings.theme = theme_sym
-        elsif settings.respond_to?(:set_theme)
-          settings.set_theme(theme_sym)
-        end
-
-        settings.save if settings.respond_to?(:save)
+        settings.theme = theme_sym
+        settings.custom_theme_name = nil
+        settings.custom_theme_path = nil
+        settings.save
 
         @tree.refresh_nodes if @tree.respond_to?(:refresh_nodes)
 
-        if respond_to?(:trigger_statusbar_message)
-          trigger_statusbar_message("#{settings.language_string(:statusbar_theme_succes)}: #{argument}!",
-                                    type: :info)
-        end
+        theme_label = AppConfig::THEMES.dig(theme_sym, :label) || theme_sym.to_s
+
+        trigger_statusbar_message(
+          "#{settings.language_string(:statusbar_theme_succes)}: #{theme_label}!",
+          type: :info
+        )
 
         @statusbar_field.text = '' if defined?(@statusbar_field) && @statusbar_field
         @active_focus = :command_mode
+        true
       else
-        if respond_to?(:trigger_statusbar_message, true)
-          trigger_statusbar_message(
-            "#{settings.language_string(:statusbar_theme_not_available)}: #{argument}!",
-            type: :error,
-            beep: settings.beeps
-          )
-        end
+        trigger_statusbar_message(
+          "#{settings.language_string(:statusbar_theme_not_available)}: #{argument}!",
+          type: :error,
+          beep: settings.beeps
+        )
 
         @active_focus = :command_mode
+        false
       end
     end
   end
@@ -2099,7 +2096,10 @@ module StatusbarInputHandler
 
   def restore_command_mode_focus
     @active_focus = :command_mode
-    @last_focus   = :command_mode
+
+    # Bewaar de oorspronkelijke focus (:tree of :table).
+    # Overschrijf deze niet met :command_mode.
+    @menu_origin_focus ||= @last_focus if %i[tree table].include?(@last_focus)
 
     return unless defined?(@statusbar_field) && @statusbar_field
 

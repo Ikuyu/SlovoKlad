@@ -86,7 +86,113 @@ class TerminalThemeResolver
     selection_shade(background)
   end
 
+  def apply_terminal_contrast(colors)
+    background = parse_color(colors[:background] || colors['background'])
+    return colors unless background
+
+    rgb = [1, 3, 5].map do |index|
+      background[index, 2].to_i(16)
+    end
+
+    linear = rgb.map do |channel|
+      value = channel / 255.0
+      value <= 0.04045 ? value / 12.92 : ((value + 0.055) / 1.055)**2.4
+    end
+
+    luminance =
+      0.2126 * linear[0] +
+      0.7152 * linear[1] +
+      0.0722 * linear[2]
+
+    target = luminance >= 0.5 ? 0 : 255
+    amount = 0.65
+
+    search_background_rgb = rgb.map do |channel|
+      (channel * (1.0 - amount) + target * amount).round
+    end
+
+    search_background = format('#%02X%02X%02X', *search_background_rgb)
+
+    shortcut_color = @colors['ansi.3'] || colors[:window_shortcut_section]
+
+    shortcut_color = ensure_contrast(
+      shortcut_color,
+      background,
+      minimum: 4.5
+    )
+
+    colors.merge(
+      search_results_background: search_background,
+      window_shortcut_section: shortcut_color
+    )
+  end
+
   private
+
+  def ensure_contrast(color, background, minimum:)
+    foreground_hex = parse_color(color)
+    background_hex = parse_color(background)
+
+    return color unless foreground_hex && background_hex
+    return foreground_hex if contrast_ratio(foreground_hex, background_hex) >= minimum
+
+    foreground_rgb = [1, 3, 5].map { |i| foreground_hex[i, 2].to_i(16) }
+    background_rgb = [1, 3, 5].map { |i| background_hex[i, 2].to_i(16) }
+
+    black = [0, 0, 0]
+    white = [255, 255, 255]
+
+    target = if contrast_ratio('#000000', background_hex) >=
+                contrast_ratio('#FFFFFF', background_hex)
+               black
+             else
+               white
+             end
+
+    low = 0.0
+    high = 1.0
+
+    20.times do
+      mid = (low + high) / 2.0
+
+      candidate = foreground_rgb.zip(target).map do |original, endpoint|
+        (original * (1.0 - mid) + endpoint * mid).round
+      end
+
+      candidate_hex = format('#%02X%02X%02X', *candidate)
+
+      if contrast_ratio(candidate_hex, background_hex) >= minimum
+        high = mid
+      else
+        low = mid
+      end
+    end
+
+    adjusted = foreground_rgb.zip(target).map do |original, endpoint|
+      (original * (1.0 - high) + endpoint * high).round
+    end
+
+    format('#%02X%02X%02X', *adjusted)
+  end
+
+  def contrast_ratio(color_a, color_b)
+    luminance_a = color_luminance(color_a)
+    luminance_b = color_luminance(color_b)
+
+    lighter, darker = [luminance_a, luminance_b].sort.reverse
+    (lighter + 0.05) / (darker + 0.05)
+  end
+
+  def color_luminance(color)
+    rgb = [1, 3, 5].map { |i| color[i, 2].to_i(16) }
+
+    linear = rgb.map do |channel|
+      value = channel / 255.0
+      value <= 0.04045 ? value / 12.92 : ((value + 0.055) / 1.055)**2.4
+    end
+
+    0.2126 * linear[0] + 0.7152 * linear[1] + 0.0722 * linear[2]
+  end
 
   def resolve_reference(reference, fallback)
     return fallback if reference.nil?
@@ -100,7 +206,7 @@ class TerminalThemeResolver
     when 'terminal.background'
       @colors['terminal.background'] || fallback
     when 'terminal.cursor'
-      @cursor_color || fallback
+      @colors['terminal.cursor'] || fallback
     else
       # Preserve literal colors, such as "#RRGGBB"; use the fallback
       # for unrecognized theme tokens.

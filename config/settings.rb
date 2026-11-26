@@ -26,13 +26,13 @@ module AppConfig
   }.freeze
 
   THEMES = {
-    default: { label: 'Default' },
+    dark: { label: 'Default Dark' },
+    light: { label: 'Default Light' },
+    bw: { label: 'Black&White' },
     cga: { label: 'Retro ANSI' },
-    julia: { label: 'Julia' },
     crt: { label: 'CRT' },
     amber: { label: 'Amber' },
     borland: { label: 'Borland' },
-    dracula: { label: 'Dracula' },
     ttx: { label: 'Teletext' },
     tos: { label: 'TOS' },
     c64: { label: 'c64' },
@@ -77,7 +77,6 @@ module AppConfig
   def self.settings
     @settings ||= Settings.new
   end
-
 end
 
 # The Settings class is only required for loading and saving the stettings
@@ -155,7 +154,7 @@ class Settings
   end
 
   def theme_item(item_key)
-    raw_theme = @theme || :default
+    raw_theme = @theme || :dark
     theme_sym = raw_theme.to_s.gsub(/\A:/, '').to_sym
 
     # Terminal en custom themes gebruiken dynamische kleuren
@@ -167,7 +166,7 @@ class Settings
     end
 
     theme_table = AppThemes::THEME_DATA.fetch(theme_sym) do
-      AppThemes::THEME_DATA[:default]
+      AppThemes::THEME_DATA[:dark]
     end
 
     key = item_key.to_sym
@@ -246,7 +245,7 @@ class Settings
 
     saved_theme_val = loaded_data[:theme]
     saved_theme_sym = saved_theme_val.to_s.gsub(/\A:/, '').to_sym unless saved_theme_val.nil?
-    ingebouwde_themas = %i[default cga julia crt amber borland dracula ttx c64 tos terminal]
+    ingebouwde_themas = %i[dark light bw cga crt amber borland ttx c64 tos terminal]
 
     @theme = if saved_theme_sym && !ingebouwde_themas.include?(saved_theme_sym)
                saved_theme_sym # Retain the custom theme symbol cleanly

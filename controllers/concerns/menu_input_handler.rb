@@ -152,7 +152,7 @@ def show_about_popup
   # de pop-up de regie overneemt! Dit lost de Escape-gijzeling per direct op.
   # =========================================================================
   @focus_before_help = @active_focus unless @focus_before_help == :menu
-  @menu_origin_focus = :menu if @active_focus == :menu
+  @menu_origin_focus ||= :menu if @active_focus == :menu
   # =========================================================================
 
   about_message = format(

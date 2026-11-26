@@ -1051,7 +1051,7 @@ class PopupView
 
     current_chunk_idx += 1
 
-    if fields.key?(:case_sensitive) || fields.key?(:regex) || fields.key?(:global)
+    if fields.key?(:case_sensitive) || fields.key?(:regex) || fields.key?(:global) || fields.key?(:folding)
       current_chunk_idx = render_search_replace_checkboxes(frame, form_chunks, current_chunk_idx, fields, focus,
                                                            active_text)
     end
@@ -1063,56 +1063,53 @@ class PopupView
   def self.render_search_replace_checkboxes(frame, form_chunks, current_chunk_idx, fields, focus, active_text)
     settings = AppConfig.settings
 
-    lang_case   = settings.language_string(:search_case_sensitive)
-    lang_regex  = settings.language_string(:search_regex)
-    lang_global = settings.language_string(:search_all)
+    definitions = [
+      [:case_sensitive, settings.language_string(:search_case_sensitive)],
+      [:regex, settings.language_string(:search_regex)],
+      [:global, settings.language_string(:search_all)],
+      [:folding, begin
+        settings.language_string(:search_folding)
+      rescue StandardError
+        'Folding'
+      end]
+    ].select { |key, _label| fields[key] }
+
+    constraints = []
+    definitions.each_with_index do |(_key, label), index|
+      constraints << RatatuiRuby::Layout::Constraint.length(4 + label.length)
+      constraints << RatatuiRuby::Layout::Constraint.length(2) if index < definitions.length - 1
+    end
+    constraints << RatatuiRuby::Layout::Constraint.min(1)
 
     horizontal_chunks = RatatuiRuby::Layout::Layout.split(
-      form_chunks[current_chunk_idx], direction: :horizontal,
-                                      constraints: [
-                                        RatatuiRuby::Layout::Constraint.length(4 + lang_case.length),
-                                        RatatuiRuby::Layout::Constraint.length(2), # Spacertje 1
-                                        RatatuiRuby::Layout::Constraint.length(4 + lang_regex.length),
-                                        RatatuiRuby::Layout::Constraint.length(2), # Spacertje 2
-                                        RatatuiRuby::Layout::Constraint.length(4 + lang_global.length),
-                                        RatatuiRuby::Layout::Constraint.min(1)     # Restant opvulling
-                                      ]
+      form_chunks[current_chunk_idx], direction: :horizontal, constraints: constraints
     )
     current_chunk_idx += 1
 
-    checkbox_definitions = {
-      case_sensitive: { idx: 0, label: lang_case },
-      regex: { idx: 2, label: lang_regex },
-      global: { idx: 4, label: lang_global } # <-- DE NIEUWE KOLOM-LINK!
-    }
-
-    checkbox_definitions.each do |f_key, info|
-      next unless (field_obj = fields[f_key])
-
-      is_focused  = (f_key == focus)
+    definitions.each_with_index do |(f_key, label), index|
+      field_obj = fields[f_key]
+      is_focused = (f_key == focus)
       char_inside = field_obj.checked ? 'x' : ' '
-      spans       = []
+      spans = []
 
       if is_focused
-        # Selected state (blinking dashboard cursor colors).
         spans << RatatuiRuby::Text::Span.new(content: "[#{char_inside}]",
                                              style: { fg: settings.theme_item(:cursor_text),
                                                       bg: settings.theme_item(:cursor_color),
                                                       modifiers: [] })
-        spans << RatatuiRuby::Text::Span.new(content: " #{info[:label]}",
+        spans << RatatuiRuby::Text::Span.new(content: " #{label}",
                                              style: { fg: active_text,
                                                       bg: settings.theme_item(:background),
                                                       modifiers: [] })
       else
-        # Ruststand
-        spans << RatatuiRuby::Text::Span.new(content: "[#{char_inside}] #{info[:label]}",
+        spans << RatatuiRuby::Text::Span.new(content: "[#{char_inside}] #{label}",
                                              style: { fg: active_text,
                                                       bg: settings.theme_item(:background) })
       end
 
       frame.render_widget(
         RatatuiRuby::Widgets::Paragraph.new(text: RatatuiRuby::Text::Line.new(spans: spans),
-                                            alignment: :left), horizontal_chunks[info[:idx]]
+                                            alignment: :left), horizontal_chunks[index * 2]
       )
     end
 

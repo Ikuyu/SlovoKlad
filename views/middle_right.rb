@@ -450,16 +450,30 @@ def table_search_regex(has_search)
   query = @last_search_query.to_s
   return reset_table_search_regex unless has_search && !query.empty?
 
-  signature = [@last_search_query, @last_case_sensitive == true, @last_regex == true]
+  folding = @table_folding == true
+
+  signature = [
+    @last_search_query,
+    @last_case_sensitive == true,
+    @last_regex == true,
+    folding
+  ]
+
   return @table_search_regex_cache if @table_search_regex_signature == signature
 
   @table_search_regex_signature = signature
-  @table_search_regex_cache = build_table_search_regex(query)
+  @table_search_regex_cache = build_table_search_regex(query, folding)
 end
 
-def build_table_search_regex(query)
+def build_table_search_regex(query, folding = false)
   flags = @last_case_sensitive ? 0 : Regexp::IGNORECASE
-  pattern = @last_regex ? query : Regexp.escape(query)
+
+  pattern = if @last_regex
+              query
+            else
+              build_script_insensitive_regex(query, @last_case_sensitive == true, folding)
+            end
+
   Regexp.new("(#{pattern})", flags)
 rescue RegexpError
   nil
@@ -529,7 +543,8 @@ def build_table_rows(tui, cards, offset, widths, colors, settings, search_regex,
 
   cards.each_with_index.map do |card, screen_index|
     absolute_index = offset + screen_index
-    selected_row = selected == absolute_index
+    hide_table_cursor = %i[menu popup].include?(@active_focus)
+    selected_row = !hide_table_cursor && selected == absolute_index
 
     marked_row = lookup ? lookup.key?(absolute_index) : selected_rows.include?(absolute_index)
     row_style = table_row_style(selected_row, visually_active, colors)
@@ -984,11 +999,37 @@ def highlighted_table_cell_spans(raw_text, visual_text, base_style, highlight_st
 
   matched_indices = {}
 
-  raw.to_enum(:scan, regex).each do
-    match = Regexp.last_match
-    start_cp = raw[0...match.begin(0)].to_s.codepoints.length
-    end_cp = start_cp + match[0].codepoints.length
-    (start_cp...end_cp).each { |index| matched_indices[index] = true }
+  if @last_regex == true
+    # Regexmodus: zoek in de oorspronkelijke tekst.
+    raw.to_enum(:scan, regex).each do
+      match = Regexp.last_match
+      start_cp = raw[0...match.begin(0)].to_s.codepoints.length
+      end_cp = start_cp + match[0].codepoints.length
+      (start_cp...end_cp).each { |index| matched_indices[index] = true }
+    end
+  else
+    # Normale zoekmodus: normaliseer naar NFD en onthoud
+    # bij welk oorspronkelijk teken ieder teken hoort.
+    nfd_chars = []
+    nfd_to_raw = []
+
+    raw.each_char.with_index do |char, raw_index|
+      char.unicode_normalize(:nfd).each_char do |nfd_char|
+        nfd_chars << nfd_char
+        nfd_to_raw << raw_index
+      end
+    end
+
+    nfd_text = nfd_chars.join
+
+    nfd_text.to_enum(:scan, regex).each do
+      match = Regexp.last_match
+
+      (match.begin(0)...match.end(0)).each do |nfd_index|
+        raw_index = nfd_to_raw[nfd_index]
+        matched_indices[raw_index] = true if raw_index
+      end
+    end
   end
 
   effective_highlight = highlight_style.dup

@@ -3,9 +3,11 @@ module NavigationInputHandler
 
   def activate_menu_focus
     @active_focus = :menu
-    @active_menu_idx = 0 # Forceer highlight direct op het eerste item (app_name)
+    @active_menu_idx = 0
     @active_submenu_idx = 0
     @menu_dropdown_open = false
+
+    @tree.refresh_nodes if @tree.respond_to?(:refresh_nodes)
   end
 
   def handle_navigation_input(key, modifiers = [])
@@ -399,7 +401,7 @@ module NavigationInputHandler
 
   def open_help_popup
     @focus_before_help = @active_focus unless @focus_before_help == :menu
-    @menu_origin_focus = :menu if @active_focus == :menu
+    @menu_origin_focus ||= :menu if @active_focus == :menu
 
     @popup.show(
       title: " #{AppConfig.settings.language_string(:help_main_title)} ",
@@ -488,14 +490,14 @@ module NavigationInputHandler
     return if defined?(@popup) && @popup && @popup.respond_to?(:active?) && @popup.active?
 
     # Define the sequence loop of installed aesthetic color palettes
-    available_themes = %i[default cga julia crt amber borland dracula ttx c64 tos terminal]
+    available_themes = %i[dark light bw cga crt amber borland ttx c64 tos terminal]
 
     # 1. Fetch the currently active design theme layout string from AppConfig
-    current_theme = settings.respond_to?(:theme) ? settings.theme : :default
+    current_theme = settings.respond_to?(:theme) ? settings.theme : :dark
     current_theme = current_theme.to_s.strip.downcase.to_sym
 
     # Alias conversion layer to keep the index tracker stable
-    current_theme = :default if %i[classic standard monochrome mono dark].include?(current_theme)
+    current_theme = :dark if %i[classic standard dark].include?(current_theme)
 
     current_idx = available_themes.index(current_theme) || 0
 
@@ -553,11 +555,10 @@ module NavigationInputHandler
     when :replace_mode
       handle_replace_mode_tab(is_deck_active)
     when :menu
-      # 👉 GEFIXT: Vanuit de menubalk sluit de loop en gaan we terug naar de sidebar tree
       @menu_dropdown_open = false
-      @active_focus = :tree
-    else
-      @active_focus = :tree
+      @active_focus = @menu_origin_focus || :tree
+      @last_focus = @active_focus
+      @menu_origin_focus = nil
     end
   end
 

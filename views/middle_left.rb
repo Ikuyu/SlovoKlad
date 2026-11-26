@@ -519,8 +519,16 @@ class RatatuiRubyApp
              (@tree_case_sensitive == true ||
               @tree_case_sensitive.to_s.strip.downcase == 'true')
 
+    folding = defined?(@tree_folding) && @tree_folding == true
+    regex_mode = defined?(@tree_regex_mode) && @tree_regex_mode == true
+
     begin
-      regex = build_script_insensitive_regex(query, strict)
+      regex = if regex_mode
+                flags = strict ? 0 : Regexp::IGNORECASE
+                Regexp.new(query, flags)
+              else
+                build_script_insensitive_regex(query, strict, folding)
+              end
     rescue RegexpError
       return highlight_map
     end
@@ -528,13 +536,32 @@ class RatatuiRubyApp
     raw = (original_name || visual_name_string).to_s
     matched_indices = {}
 
-    raw.to_enum(:scan, regex).each do
-      match = Regexp.last_match
-      start_cp = raw[0...match.begin(0)].to_s.codepoints.length
-      end_cp = start_cp + match[0].codepoints.length
+    if regex_mode
+      raw.to_enum(:scan, regex).each do
+        match = Regexp.last_match
+        start_cp = raw[0...match.begin(0)].to_s.codepoints.length
+        end_cp = start_cp + match[0].codepoints.length
+        (start_cp...end_cp).each { |index| matched_indices[index] = true }
+      end
+    else
+      nfd_chars = []
+      nfd_to_raw = []
 
-      (start_cp...end_cp).each do |index|
-        matched_indices[index] = true
+      raw.each_char.with_index do |char, raw_index|
+        char.unicode_normalize(:nfd).each_char do |nfd_char|
+          nfd_chars << nfd_char
+          nfd_to_raw << raw_index
+        end
+      end
+
+      nfd_text = nfd_chars.join
+
+      nfd_text.to_enum(:scan, regex).each do
+        match = Regexp.last_match
+        (match.begin(0)...match.end(0)).each do |nfd_index|
+          raw_index = nfd_to_raw[nfd_index]
+          matched_indices[raw_index] = true if raw_index
+        end
       end
     end
 
@@ -716,9 +743,20 @@ class RatatuiRubyApp
     # 1. Iterate through all visible folders and decks using the stable build_tree_spans.
     nodes.each_with_index do |node, index|
       current_cursor_row = defined?(@tree_state) && @tree_state ? @tree_state.selected : 0
-      is_selected = (index == current_cursor_row)
 
-      line = build_tree_spans(node, is_selected, is_tree_visually_active, panel_width - 2)
+      # De Tree-cursor is alleen zichtbaar wanneer de Tree daadwerkelijk focus heeft.
+      # Bij F10 blijft de selectiepositie behouden, maar verdwijnt de highlight.
+
+      hide_tree_cursor = %i[menu popup].include?(@active_focus)
+      is_selected = !hide_tree_cursor && (index == current_cursor_row)
+
+      line = build_tree_spans(
+        node,
+        is_selected,
+        is_tree_visually_active,
+        panel_width - 2
+      )
+
       list_items << RatatuiRuby::Widgets::ListItem.new(content: line)
     end
 
