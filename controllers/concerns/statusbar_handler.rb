@@ -109,12 +109,11 @@ module StatusbarInputHandler
 
         @command_mode_visible = false if defined?(@command_mode_visible)
 
-        target_panel = defined?(@last_focus) && @last_focus && @last_focus != :popup ? @last_focus : :tree
+        target_panel = @menu_origin_focus || :tree
         target_panel = :tree if target_panel == :command_mode
 
         @active_focus = target_panel
         @last_focus   = target_panel
-        @menu_origin_focus = nil # Reset de kaper-pointer direct!
         @library_dirty = false
 
         if respond_to?(:trigger_statusbar_message, true)
@@ -371,6 +370,7 @@ module StatusbarInputHandler
       system("xdg-open '#{file_path}'")
     end
 
+    @active_focus = @menu_origin_focus || :tree
     true
   end
 
@@ -719,8 +719,8 @@ module StatusbarInputHandler
 
     unless origin == :tree
       if respond_to?(:trigger_statusbar_message, true)
-        trigger_statusbar_message("#{settings.language_string(:statusbar_rename_can_only_be_used_in_tree)}!", type: :error,
-                                                                                                              beep: settings.beeps)
+        trigger_statusbar_message("#{settings.language_string(:statusbar_rename_nodes_can_only_be_used_in_library)}!", type: :error,
+                                                                                                                       beep: settings.beeps)
       end
       @active_focus = :command_mode
       return false # Houdt de statusbalk open
@@ -755,7 +755,7 @@ module StatusbarInputHandler
     unless origin == :table
       if respond_to?(:trigger_statusbar_message, true)
         trigger_statusbar_message(
-          "#{settings.language_string(:statusbar_add_can_only_be_used_in_deck)}!", type: :error, beep: settings.beeps
+          "#{settings.language_string(:statusbar_add_can_only_be_used_in_decks)}!", type: :error, beep: settings.beeps
         )
       end
       @active_focus = :command_mode
@@ -783,8 +783,8 @@ module StatusbarInputHandler
 
     unless origin == :tree
       if respond_to?(:trigger_statusbar_message, true)
-        trigger_statusbar_message('Can only add tree nodes while inside the tree sidebar!', type: :error,
-                                                                                            beep: settings.beeps)
+        trigger_statusbar_message("#{settings.language_string(:statusbar_add_nodes_can_only_be_used_in_library)}!", type: :error,
+                                                                                                                    beep: settings.beeps)
       end
       @active_focus = :command_mode
       return false
@@ -813,8 +813,8 @@ module StatusbarInputHandler
 
     unless origin == :tree
       if respond_to?(:trigger_statusbar_message, true)
-        trigger_statusbar_message('Can only delete tree nodes while inside the tree sidebar!', type: :error,
-                                                                                               beep: settings.beeps)
+        trigger_statusbar_message("#{settings.language_string(:statubasr_delete_nodes_can_only_be_used_in_library)}!", type: :error,
+                                                                                                                       beep: settings.beeps)
       end
       @active_focus = :command_mode
       return false
@@ -899,7 +899,7 @@ module StatusbarInputHandler
     unless origin == :table
       if respond_to?(:trigger_statusbar_message, true)
         trigger_statusbar_message(
-          "#{settings.language_string(:statusbar_edit_can_only_be_used_in_deck)}!", type: :error, beep: settings.beeps
+          "#{settings.language_string(:statusbar_edit_can_only_be_used_in_decks)}!", type: :error, beep: settings.beeps
         )
       end
       @active_focus = :command_mode
@@ -1041,7 +1041,7 @@ module StatusbarInputHandler
         # 🎯 FIXED: Call the method on the @library object.
         result = @library.execute_tar_bulk_export('xml', false, custom_name)
         finalize_tar_export_ui_message(result, 'xml', false)
-        true
+        !result.is_a?(StandardError)
       else
         @statusbar_field.text = '' if defined?(@statusbar_field) && @statusbar_field
         @statusbar_field.cursor_index = 0 if @statusbar_field.respond_to?(:cursor_index=, true)
@@ -1076,7 +1076,7 @@ module StatusbarInputHandler
         )
 
         finalize_tar_export_ui_message(result, 'csv', include_header)
-        true
+        !result.is_a?(StandardError)
       else
         @statusbar_field.text = '' if defined?(@statusbar_field) && @statusbar_field
         @statusbar_field.cursor_index = 0 if @statusbar_field.respond_to?(:cursor_index=, true)
@@ -1228,7 +1228,6 @@ module StatusbarInputHandler
 
       @active_focus = %i[tree table].include?(@menu_origin_focus) ? @menu_origin_focus : :tree
       @last_focus = @active_focus
-      @menu_origin_focus = nil
       @library_dirty = true
 
       trigger_statusbar_message("#{settings.language_string(:statusbar_imported)}: #{import_result} #{settings.language_string(:statusbar_imported_into)} '#{target_deck.name}'!",
@@ -1650,6 +1649,7 @@ module StatusbarInputHandler
         end
       end
       @save_operation_mode = nil
+      @active_focus = @menu_origin_focus || :tree unless force_quit
       true
     end
   end
@@ -1686,7 +1686,7 @@ module StatusbarInputHandler
     end
 
     @statusbar_field.text = '' if defined?(@statusbar_field) && @statusbar_field
-    @active_focus = :command_mode
+    @active_focus = @menu_origin_focus || :tree
   end
 
   def toggle_rotation_indicator_via_command
@@ -1710,7 +1710,7 @@ module StatusbarInputHandler
     trigger_statusbar_message("#{state_label}!", type: :info)
 
     @statusbar_field.text = '' if defined?(@statusbar_field) && @statusbar_field
-    @active_focus = :command_mode
+    @active_focus = @menu_origin_focus || :tree
   end
 
   def show_markers_via_command
@@ -1766,7 +1766,7 @@ module StatusbarInputHandler
         end
 
         @statusbar_field.text = '' if defined?(@statusbar_field) && @statusbar_field
-        @active_focus = :command_mode
+        @active_focus = @menu_origin_focus || :tree
       else
         if respond_to?(:trigger_statusbar_message)
           trigger_statusbar_message(
@@ -1846,7 +1846,7 @@ module StatusbarInputHandler
         end
 
         @statusbar_field.text = '' if defined?(@statusbar_field) && @statusbar_field
-        @active_focus = :command_mode
+        @active_focus = @menu_origin_focus || :tree
       else
         # Fault: Unknown style. Drop warning, KEEP TEXT IN LINE BUFFER, and retain focus state!
         if respond_to?(:trigger_statusbar_message)
@@ -1913,7 +1913,7 @@ module StatusbarInputHandler
       end
 
       @statusbar_field.text = '' if defined?(@statusbar_field) && @statusbar_field
-      @active_focus = :command_mode
+      @active_focus = @menu_origin_focus || :tree
     else
       # Error: Invalid language entered. Show the message, keep the text, and retain focus.
       if respond_to?(:trigger_statusbar_message)
@@ -2013,7 +2013,7 @@ module StatusbarInputHandler
         )
 
         @statusbar_field.text = '' if defined?(@statusbar_field) && @statusbar_field
-        @active_focus = :command_mode
+        @active_focus = @menu_origin_focus || :tree
         true
       else
         trigger_statusbar_message(

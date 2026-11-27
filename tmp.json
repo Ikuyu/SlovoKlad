@@ -1,0 +1,1168 @@
+{
+  "subjects": [
+    {
+      "id": "f4bc714b-6218-413d-9519-61c8ae028892",
+      "name": "Podgaevskaja, Alla e.a.",
+      "sources": [
+        {
+          "id": "05e354a9-80d7-44e9-9b7f-dd8f75a1f492",
+          "name": "Паспорт Россия",
+          "decks": [
+            {
+              "id": "9161060c-79ce-482a-9816-3602a48673ce",
+              "name": "Aзбука",
+              "cards": [
+                {
+                  "id": "53228467-895c-4279-8c77-85c23bea6889",
+                  "study": true,
+                  "term": "А a",
+                  "context": "",
+                  "meaning": "à",
+                  "interval": 1,
+                  "next_review_at": "2026-11-18 10:41:59 +0100"
+                },
+                {
+                  "id": "0d7b76b9-4e9d-45b9-8a57-e78396e0bdd4",
+                  "study": true,
+                  "term": "Б б",
+                  "context": "",
+                  "meaning": "bèu",
+                  "interval": 1,
+                  "next_review_at": "2026-11-18 10:41:59 +0100"
+                },
+                {
+                  "id": "358b7f1e-4ee2-4e8a-8199-91723c2510fc",
+                  "study": true,
+                  "term": "В в",
+                  "context": "",
+                  "meaning": "vèu",
+                  "interval": 1,
+                  "next_review_at": "2026-11-18 10:41:59 +0100"
+                },
+                {
+                  "id": "e9c79680-2266-4195-b61d-af1bac9fc0ec",
+                  "study": true,
+                  "term": "Г г",
+                  "context": "",
+                  "meaning": "'gèu",
+                  "interval": 1,
+                  "next_review_at": "2026-11-18 10:41:59 +0100"
+                },
+                {
+                  "id": "50c74d53-4e70-4976-aad3-40352e2f4138",
+                  "study": true,
+                  "term": "Д д",
+                  "context": "",
+                  "meaning": "dèu",
+                  "interval": 1,
+                  "next_review_at": "2026-11-18 10:41:59 +0100"
+                },
+                {
+                  "id": "872656f3-5ac4-4a58-b990-468d61c32f23",
+                  "study": true,
+                  "term": "Е е",
+                  "context": "",
+                  "meaning": "Jè, é",
+                  "interval": 1,
+                  "next_review_at": "2026-11-18 10:41:59 +0100"
+                },
+                {
+                  "id": "d5637938-5fcb-430f-aee2-8aff5947a36f",
+                  "study": true,
+                  "term": "Ж ж",
+                  "context": "",
+                  "meaning": "zjèu",
+                  "interval": 1,
+                  "next_review_at": "2026-11-18 10:41:59 +0100"
+                },
+                {
+                  "id": "3633323f-37ac-457c-ade5-af07e760ba5a",
+                  "study": true,
+                  "term": "З з",
+                  "context": "",
+                  "meaning": "zèu",
+                  "interval": 1,
+                  "next_review_at": "2026-11-18 10:41:59 +0100"
+                },
+                {
+                  "id": "79e89ce8-07c1-4bfb-a73a-e3dfa2d61e70",
+                  "study": true,
+                  "term": "И и",
+                  "context": "",
+                  "meaning": "ie",
+                  "interval": 1,
+                  "next_review_at": "2026-11-18 10:41:59 +0100"
+                },
+                {
+                  "id": "ae3afe9c-62ac-4a67-bf6e-918d12333c69",
+                  "study": true,
+                  "term": "Й й",
+                  "context": "",
+                  "meaning": "jèu",
+                  "interval": 1,
+                  "next_review_at": "2026-11-18 10:41:59 +0100"
+                },
+                {
+                  "id": "b9a9546c-22b5-47cb-93c4-bd2108c2f43a",
+                  "study": true,
+                  "term": "К к",
+                  "context": "",
+                  "meaning": "k",
+                  "interval": 1,
+                  "next_review_at": "2026-11-18 10:41:59 +0100"
+                },
+                {
+                  "id": "34d701db-caf4-45b1-83f6-fbb523a4feb0",
+                  "study": true,
+                  "term": "Л л",
+                  "context": "",
+                  "meaning": "lèu",
+                  "interval": 1,
+                  "next_review_at": "2026-11-18 10:41:59 +0100"
+                },
+                {
+                  "id": "04acc7d9-0691-494e-ac02-a466dbf8ad43",
+                  "study": true,
+                  "term": "М м",
+                  "context": "",
+                  "meaning": "mèu",
+                  "interval": 1,
+                  "next_review_at": "2026-11-18 10:41:59 +0100"
+                },
+                {
+                  "id": "032fc46e-0e73-4d1d-b3ad-a8fca516a0d0",
+                  "study": true,
+                  "term": "Н н",
+                  "context": "",
+                  "meaning": "nèu",
+                  "interval": 1,
+                  "next_review_at": "2026-11-18 10:41:59 +0100"
+                },
+                {
+                  "id": "5124eee0-11cf-4691-bbaa-7b3d796ca622",
+                  "study": true,
+                  "term": "О о",
+                  "context": "",
+                  "meaning": "ó",
+                  "interval": 1,
+                  "next_review_at": "2026-11-18 10:41:59 +0100"
+                },
+                {
+                  "id": "3bc3e728-6d7a-44ba-b77e-3f3d760b1b85",
+                  "study": true,
+                  "term": "П п",
+                  "context": "",
+                  "meaning": "pèu",
+                  "interval": 1,
+                  "next_review_at": "2026-11-18 10:41:59 +0100"
+                },
+                {
+                  "id": "44e54daf-5bd9-4499-a095-8db4cf2d3794",
+                  "study": true,
+                  "term": "Р р",
+                  "context": "",
+                  "meaning": "r",
+                  "interval": 1,
+                  "next_review_at": "2026-11-18 10:41:59 +0100"
+                },
+                {
+                  "id": "af2a79d6-8e9b-4eb0-9dbe-b45a667e468b",
+                  "study": true,
+                  "term": "С с",
+                  "context": "",
+                  "meaning": "s",
+                  "interval": 1,
+                  "next_review_at": "2026-11-18 10:41:59 +0100"
+                },
+                {
+                  "id": "286fb9ef-6f39-424d-bf3b-4d653e13d67f",
+                  "study": true,
+                  "term": "Т т",
+                  "context": "",
+                  "meaning": "t",
+                  "interval": 1,
+                  "next_review_at": "2026-11-18 10:41:59 +0100"
+                },
+                {
+                  "id": "b17a1bcf-c512-498a-a7ab-d4aebac62dac",
+                  "study": true,
+                  "term": "У у",
+                  "context": "",
+                  "meaning": "oe",
+                  "interval": 1,
+                  "next_review_at": "2026-11-18 10:41:59 +0100"
+                },
+                {
+                  "id": "bd69496a-1fae-423a-abf6-4b3afc8d80d4",
+                  "study": true,
+                  "term": "Ф ф",
+                  "context": "",
+                  "meaning": "f",
+                  "interval": 1,
+                  "next_review_at": "2026-11-18 10:41:59 +0100"
+                },
+                {
+                  "id": "76b5e626-dcc0-4188-8306-445075d05605",
+                  "study": true,
+                  "term": "Х х",
+                  "context": "",
+                  "meaning": "zachte ch",
+                  "interval": 1,
+                  "next_review_at": "2026-11-18 10:41:59 +0100"
+                },
+                {
+                  "id": "84518b56-6f9c-474f-8d1e-068042ee66bf",
+                  "study": true,
+                  "term": "Ц ц",
+                  "context": "",
+                  "meaning": "ts",
+                  "interval": 1,
+                  "next_review_at": "2026-11-18 10:41:59 +0100"
+                },
+                {
+                  "id": "61404b67-f159-43b7-8b1e-5688710d6ab8",
+                  "study": true,
+                  "term": "Ч ч",
+                  "context": "",
+                  "meaning": "tjs",
+                  "interval": 1,
+                  "next_review_at": "2026-11-18 10:41:59 +0100"
+                },
+                {
+                  "id": "b9a38112-9001-43c0-82f6-5f08bae48aa1",
+                  "study": true,
+                  "term": "Ш ш",
+                  "context": "",
+                  "meaning": "sj",
+                  "interval": 1,
+                  "next_review_at": "2026-11-18 10:41:59 +0100"
+                },
+                {
+                  "id": "4e907d87-277d-4d6d-a072-bcf43e92e21d",
+                  "study": true,
+                  "term": "Щ щ",
+                  "context": "",
+                  "meaning": "sjsj",
+                  "interval": 1,
+                  "next_review_at": "2026-11-18 10:41:59 +0100"
+                },
+                {
+                  "id": "6c3e9afb-d324-441a-bbe8-045aff54633f",
+                  "study": true,
+                  "term": "ъ",
+                  "context": "",
+                  "meaning": "–",
+                  "interval": 1,
+                  "next_review_at": "2026-11-18 10:41:59 +0100"
+                },
+                {
+                  "id": "ad636cc9-cfa4-44e6-a177-3513a7d4fb02",
+                  "study": true,
+                  "term": "ы",
+                  "context": "",
+                  "meaning": "ẻ waarbij je je mond zoveel mogelijk dicht houdt",
+                  "interval": 1,
+                  "next_review_at": "2026-11-18 10:41:59 +0100"
+                },
+                {
+                  "id": "87408be8-50d6-44a4-a738-1c1847efdab4",
+                  "study": true,
+                  "term": "ь",
+                  "context": "",
+                  "meaning": "–",
+                  "interval": 1,
+                  "next_review_at": "2026-11-18 10:41:59 +0100"
+                },
+                {
+                  "id": "1b778315-ccb2-4c3d-a256-508bdba107a3",
+                  "study": true,
+                  "term": "Э э",
+                  "context": "",
+                  "meaning": "è",
+                  "interval": 1,
+                  "next_review_at": "2026-11-18 10:41:59 +0100"
+                },
+                {
+                  "id": "e1b19bb3-5d34-449a-af77-11cab2901397",
+                  "study": true,
+                  "term": "Ю ю",
+                  "context": "",
+                  "meaning": "joe, oe",
+                  "interval": 1,
+                  "next_review_at": "2026-11-18 10:41:59 +0100"
+                },
+                {
+                  "id": "32a42891-ba55-4739-b892-75aa37730474",
+                  "study": true,
+                  "term": "Я я",
+                  "context": "",
+                  "meaning": "já, á",
+                  "interval": 1,
+                  "next_review_at": "2026-11-18 10:41:59 +0100"
+                },
+                {
+                  "id": "ff22a967-358d-471a-af8c-be87971aa531",
+                  "study": true,
+                  "term": "Ё ё",
+                  "context": "",
+                  "meaning": "jó, ó",
+                  "interval": 1,
+                  "next_review_at": "2026-11-18 10:41:59 +0100"
+                }
+              ]
+            },
+            {
+              "id": "20e4a1be-3f47-4246-9c52-f136c2c8e54a",
+              "name": "Уро́к 1",
+              "cards": [
+                {
+                  "id": "ba07fb0e-fd88-4718-b56c-ed0bb1db6734",
+                  "study": true,
+                  "term": "а",
+                  "context": "",
+                  "meaning": "maar, en",
+                  "interval": 1,
+                  "next_review_at": "2026-11-18 10:41:59 +0100"
+                },
+                {
+                  "id": "0a78ac45-97d8-4187-8a83-859a000039df",
+                  "study": false,
+                  "term": "а́збука",
+                  "context": "",
+                  "meaning": "alfabet",
+                  "interval": 1,
+                  "next_review_at": "2026-11-18 10:41:59 +0100"
+                },
+                {
+                  "id": "f29e9c7a-4f93-4499-b919-2f1637f74944",
+                  "study": false,
+                  "term": "актри́са",
+                  "context": "",
+                  "meaning": "toneelspeelster",
+                  "interval": 1,
+                  "next_review_at": "2026-11-18 10:41:59 +0100"
+                },
+                {
+                  "id": "a768326c-8a15-499e-a9a1-a73203e6362f",
+                  "study": false,
+                  "term": "актёр",
+                  "context": "",
+                  "meaning": "toneelspeler",
+                  "interval": 1,
+                  "next_review_at": "2026-11-18 10:41:59 +0100"
+                },
+                {
+                  "id": "006de4ff-087a-4c1d-9963-ce87b52fc802",
+                  "study": true,
+                  "term": "бельги́ец",
+                  "context": "",
+                  "meaning": "Belg",
+                  "interval": 1,
+                  "next_review_at": "2026-11-18 10:41:59 +0100"
+                },
+                {
+                  "id": "006de4ff-087a-4c1d-9963-ce87b52fc802",
+                  "study": true,
+                  "term": "бельги́йка",
+                  "context": "",
+                  "meaning": "Belgische",
+                  "interval": 1,
+                  "next_review_at": "2026-11-18 10:41:59 +0100"
+                },
+                {
+                  "id": "35e99ac1-2d03-481b-b2b5-9b7e0692cfe6",
+                  "study": false,
+                  "term": "библиоте́ка",
+                  "context": "",
+                  "meaning": "bibliotheek",
+                  "interval": 1,
+                  "next_review_at": "2026-11-18 10:41:59 +0100"
+                },
+                {
+                  "id": "aa47b9b5-c1ae-4749-8d22-13de374e9b7f",
+                  "study": false,
+                  "term": "бизнесме́н",
+                  "context": "",
+                  "meaning": "zakenman",
+                  "interval": 1,
+                  "next_review_at": "2026-11-18 10:41:59 +0100"
+                },
+                {
+                  "id": "78d32086-36ca-4306-96ab-8d517bbb88cd",
+                  "study": false,
+                  "term": "брат",
+                  "context": "",
+                  "meaning": "broer",
+                  "interval": 1,
+                  "next_review_at": "2026-11-18 10:41:59 +0100"
+                },
+                {
+                  "id": "84059dfd-7a0e-4e0c-abf8-74ce42c7e696",
+                  "study": false,
+                  "term": "вот",
+                  "context": "",
+                  "meaning": "kijk! daar heb je…",
+                  "interval": 1,
+                  "next_review_at": "2026-11-18 10:41:59 +0100"
+                },
+                {
+                  "id": "21c605ba-ab9a-4fdc-be3a-5019a824e905",
+                  "study": true,
+                  "term": "вы",
+                  "context": "",
+                  "meaning": "U, jullie",
+                  "interval": 1,
+                  "next_review_at": "2026-11-18 10:41:59 +0100"
+                },
+                {
+                  "id": "5bd65543-71c7-4bf8-914a-fc2203348268",
+                  "study": true,
+                  "term": "голла́ндец",
+                  "context": "",
+                  "meaning": "Nederlander, Hollander",
+                  "interval": 1,
+                  "next_review_at": "2026-11-18 10:41:59 +0100"
+                },
+                {
+                  "id": "5bd65543-71c7-4bf8-914a-fc2203348268",
+                  "study": true,
+                  "term": "голла́ндка",
+                  "context": "",
+                  "meaning": "Nederlandse, Holandse",
+                  "interval": 1,
+                  "next_review_at": "2026-11-18 10:41:59 +0100"
+                },
+                {
+                  "id": "793940d5-0b7c-4e7c-bbff-09962bd49e0c",
+                  "study": true,
+                  "term": "гости́ница",
+                  "context": "",
+                  "meaning": "hotel",
+                  "interval": 1,
+                  "next_review_at": "2026-11-18 10:41:59 +0100"
+                },
+                {
+                  "id": "6dccd490-99d4-4fea-9055-32302a9e6cef",
+                  "study": false,
+                  "term": "да",
+                  "context": "",
+                  "meaning": "ja",
+                  "interval": 1,
+                  "next_review_at": "2026-11-18 10:41:59 +0100"
+                },
+                {
+                  "id": "6d5f534f-508b-4c24-a7d0-960f98a5af96",
+                  "study": false,
+                  "term": "жена́",
+                  "context": "",
+                  "meaning": "vrouw, echtgenote",
+                  "interval": 1,
+                  "next_review_at": "2026-11-18 10:41:59 +0100"
+                },
+                {
+                  "id": "d2014d83-e903-4e2e-99fd-9f3ee874e307",
+                  "study": false,
+                  "term": "журнали́ст",
+                  "context": "",
+                  "meaning": "journalist",
+                  "interval": 1,
+                  "next_review_at": "2026-11-18 10:41:59 +0100"
+                },
+                {
+                  "id": "d2014d83-e903-4e2e-99fd-9f3ee874e307",
+                  "study": true,
+                  "term": "журнали́стка",
+                  "context": "",
+                  "meaning": "journaliste",
+                  "interval": 1,
+                  "next_review_at": "2026-11-18 10:41:59 +0100"
+                },
+                {
+                  "id": "4fe548fc-989d-4961-88a6-537bae9ab3f5",
+                  "study": false,
+                  "term": "и",
+                  "context": "",
+                  "meaning": "en (= plus)",
+                  "interval": 1,
+                  "next_review_at": "2026-11-18 10:41:59 +0100"
+                },
+                {
+                  "id": "0a0a2eb6-067e-40e9-a0dc-4edd197a3116",
+                  "study": false,
+                  "term": "и́ли",
+                  "context": "",
+                  "meaning": "of",
+                  "interval": 1,
+                  "next_review_at": "2026-11-18 10:41:59 +0100"
+                },
+                {
+                  "id": "c262581d-8d69-444b-8e53-1dc48d043ac4",
+                  "study": false,
+                  "term": "кафэ́",
+                  "context": "",
+                  "meaning": "cafe",
+                  "interval": 1,
+                  "next_review_at": "2026-11-18 10:41:59 +0100"
+                },
+                {
+                  "id": "cbb45bc5-898e-4a04-8527-c4ff215a6f6f",
+                  "study": false,
+                  "term": "кинотеа́тр",
+                  "context": "",
+                  "meaning": "bioscoop",
+                  "interval": 1,
+                  "next_review_at": "2026-11-18 10:41:59 +0100"
+                },
+                {
+                  "id": "1b768497-c1f0-486c-b575-7ca8cb7381dd",
+                  "study": false,
+                  "term": "кто",
+                  "context": "",
+                  "meaning": "wie",
+                  "interval": 1,
+                  "next_review_at": "2026-11-18 10:41:59 +0100"
+                },
+                {
+                  "id": "e58bc742-ed17-488f-876a-af6206407446",
+                  "study": false,
+                  "term": "магази́н",
+                  "context": "",
+                  "meaning": "winkel",
+                  "interval": 1,
+                  "next_review_at": "2026-11-18 10:41:59 +0100"
+                },
+                {
+                  "id": "e7d22058-f48e-4b77-a108-458a7bf5c837",
+                  "study": false,
+                  "term": "метро́",
+                  "context": "",
+                  "meaning": "metro",
+                  "interval": 1,
+                  "next_review_at": "2026-11-18 10:41:59 +0100"
+                },
+                {
+                  "id": "a48c4044-c9ae-4803-a8ca-f8231b9defa7",
+                  "study": false,
+                  "term": "муж",
+                  "context": "",
+                  "meaning": "man, echtgenoot",
+                  "interval": 1,
+                  "next_review_at": "2026-11-18 10:41:59 +0100"
+                },
+                {
+                  "id": "e695ed5f-35ec-4a02-b85e-9f27ff5b0d3f",
+                  "study": true,
+                  "term": "мы",
+                  "context": "",
+                  "meaning": "wij",
+                  "interval": 1,
+                  "next_review_at": "2026-11-18 10:41:59 +0100"
+                },
+                {
+                  "id": "27230a45-2b90-462f-ac9d-12a94e5f2f43",
+                  "study": false,
+                  "term": "не",
+                  "context": "",
+                  "meaning": "niet, geen",
+                  "interval": 1,
+                  "next_review_at": "2026-11-18 10:41:59 +0100"
+                },
+                {
+                  "id": "08ea9662-cf72-4daa-a100-05212e379652",
+                  "study": false,
+                  "term": "нет",
+                  "context": "",
+                  "meaning": "nee",
+                  "interval": 1,
+                  "next_review_at": "2026-11-18 10:41:59 +0100"
+                },
+                {
+                  "id": "46c9b115-5cee-42c7-8566-f31b1635a608",
+                  "study": true,
+                  "term": "он",
+                  "context": "",
+                  "meaning": "hij",
+                  "interval": 1,
+                  "next_review_at": "2026-11-18 10:41:59 +0100"
+                },
+                {
+                  "id": "41a263f3-c2b2-4edf-908e-f28fa9efeaea",
+                  "study": true,
+                  "term": "онó",
+                  "context": "",
+                  "meaning": "het",
+                  "interval": 1,
+                  "next_review_at": "2026-11-18 10:41:59 +0100"
+                },
+                {
+                  "id": "249162f7-bf50-42de-8d9c-64faf124418f",
+                  "study": true,
+                  "term": "она́",
+                  "context": "",
+                  "meaning": "zij (ev.)",
+                  "interval": 1,
+                  "next_review_at": "2026-11-18 10:41:59 +0100"
+                },
+                {
+                  "id": "98fbc41b-a044-4a9c-8caa-2e5b13428692",
+                  "study": true,
+                  "term": "они́",
+                  "context": "",
+                  "meaning": "zij (mv.)",
+                  "interval": 1,
+                  "next_review_at": "2026-11-18 10:41:59 +0100"
+                },
+                {
+                  "id": "d0b39699-7896-4fe5-b800-6a6ec02b2e59",
+                  "study": false,
+                  "term": "парк",
+                  "context": "",
+                  "meaning": "park",
+                  "interval": 1,
+                  "next_review_at": "2026-11-18 10:41:59 +0100"
+                },
+                {
+                  "id": "b22a4059-2285-428c-b76a-7d4f28fa8827",
+                  "study": false,
+                  "term": "сестра́",
+                  "context": "",
+                  "meaning": "zus",
+                  "interval": 1,
+                  "next_review_at": "2026-11-18 10:41:59 +0100"
+                },
+                {
+                  "id": "ddd566f4-7ef2-4926-8ace-41443d71a1b7",
+                  "study": false,
+                  "term": "студе́нт",
+                  "context": "",
+                  "meaning": "student",
+                  "interval": 1,
+                  "next_review_at": "2026-11-18 10:41:59 +0100"
+                },
+                {
+                  "id": "f0bad033-99af-4943-a218-6f05a9bb510a",
+                  "study": false,
+                  "term": "студе́нтка",
+                  "context": "",
+                  "meaning": "studente",
+                  "interval": 1,
+                  "next_review_at": "2026-11-18 10:41:59 +0100"
+                },
+                {
+                  "id": "5e374a30-e511-4e21-b5b5-294b49c19850",
+                  "study": false,
+                  "term": "теа́тр",
+                  "context": "",
+                  "meaning": "schouwburg, theater",
+                  "interval": 1,
+                  "next_review_at": "2026-11-18 10:41:59 +0100"
+                },
+                {
+                  "id": "bec57eef-909f-46c5-8eb5-24128ee964db",
+                  "study": false,
+                  "term": "то́же",
+                  "context": "",
+                  "meaning": "ook",
+                  "interval": 1,
+                  "next_review_at": "2026-11-18 10:41:59 +0100"
+                },
+                {
+                  "id": "9c95736b-4d6a-4bb8-a166-3403a5432121",
+                  "study": false,
+                  "term": "ты",
+                  "context": "",
+                  "meaning": "jij",
+                  "interval": 1,
+                  "next_review_at": "2026-11-18 10:41:59 +0100"
+                },
+                {
+                  "id": "66534a6e-7229-46dc-b9be-c5f77a557ffc",
+                  "study": false,
+                  "term": "уро́к",
+                  "context": "",
+                  "meaning": "les",
+                  "interval": 1,
+                  "next_review_at": "2026-11-18 10:41:59 +0100"
+                },
+                {
+                  "id": "23890704-3bbe-4ced-a8a5-740a793e92c4",
+                  "study": false,
+                  "term": "фо́то",
+                  "context": "",
+                  "meaning": "foto",
+                  "interval": 1,
+                  "next_review_at": "2026-11-18 10:41:59 +0100"
+                },
+                {
+                  "id": "90160a97-cf45-4ce7-97f7-fcbf9a3f6084",
+                  "study": false,
+                  "term": "фото́граф",
+                  "context": "",
+                  "meaning": "fotograaf",
+                  "interval": 1,
+                  "next_review_at": "2026-11-18 10:41:59 +0100"
+                },
+                {
+                  "id": "1d9a48c5-a45b-4555-ae17-5b177c39f82a",
+                  "study": false,
+                  "term": "что",
+                  "context": "",
+                  "meaning": "wat",
+                  "interval": 1,
+                  "next_review_at": "2026-11-18 10:41:59 +0100"
+                },
+                {
+                  "id": "39fd0b37-d87f-4515-a1fe-41877daa7dd6",
+                  "study": false,
+                  "term": "э́то",
+                  "context": "",
+                  "meaning": "dit, dat",
+                  "interval": 1,
+                  "next_review_at": "2026-11-18 10:41:59 +0100"
+                },
+                {
+                  "id": "1c7c4945-0be4-4b0f-b00c-b48b739b7dd0",
+                  "study": false,
+                  "term": "я",
+                  "context": "",
+                  "meaning": "ik",
+                  "interval": 1,
+                  "next_review_at": "2026-11-18 10:41:59 +0100"
+                }
+              ]
+            },
+            {
+              "id": "2ac2c9e7-6c5b-4a8f-8095-dd3e5bca0262",
+              "name": "Уро́к 2",
+              "cards": [
+                {
+                  "id": "eefbb77b-fd94-40fe-a5b3-a11162bd70b8",
+                  "study": true,
+                  "term": "в + 6e nv.",
+                  "context": "",
+                  "meaning": "in",
+                  "interval": 1,
+                  "next_review_at": "2026-11-18 10:41:59 +0100"
+                },
+                {
+                  "id": "a08d575b-d60f-4f10-8dc3-866f76a2d86a",
+                  "study": false,
+                  "term": "регистра́ция",
+                  "context": "",
+                  "meaning": "receptie",
+                  "interval": 1,
+                  "next_review_at": "2026-11-18 10:41:59 +0100"
+                },
+                {
+                  "id": "77f5e27f-b4a0-4b85-9f1d-7f799b30801f",
+                  "study": false,
+                  "term": "администра́тоф",
+                  "context": "",
+                  "meaning": "receptionist(e)",
+                  "interval": 1,
+                  "next_review_at": "2026-11-18 10:41:59 +0100"
+                },
+                {
+                  "id": "92df422d-6ae6-4eaf-84d7-53cc6db49877",
+                  "study": true,
+                  "term": "ваш, ва́ша, ва́ше",
+                  "context": "",
+                  "meaning": "uw, van u, jullie, van jullie",
+                  "interval": 1,
+                  "next_review_at": "2026-11-18 10:41:59 +0100"
+                },
+                {
+                  "id": "e605a7e1-f8ff-4df0-a875-4a11384cb2b1",
+                  "study": true,
+                  "term": "фами́лия",
+                  "context": "",
+                  "meaning": "(achter)naam",
+                  "interval": 1,
+                  "next_review_at": "2026-11-18 10:41:59 +0100"
+                },
+                {
+                  "id": "61563d9a-6efa-451d-a5ad-4c7ea2135651",
+                  "study": false,
+                  "term": "тури́ст",
+                  "context": "",
+                  "meaning": "toerist",
+                  "interval": 1,
+                  "next_review_at": "2026-11-18 10:41:59 +0100"
+                },
+                {
+                  "id": "bcdfc39e-807d-419b-b762-53654cce3701",
+                  "study": true,
+                  "term": "и́мя (onzijdig)",
+                  "context": "",
+                  "meaning": "(voor)naam",
+                  "interval": 1,
+                  "next_review_at": "2026-11-18 10:41:59 +0100"
+                },
+                {
+                  "id": "b8403fec-5a24-4125-99f7-57c73ba4e40b",
+                  "study": true,
+                  "term": "о́тчество",
+                  "context": "",
+                  "meaning": "vadersnaam",
+                  "interval": 1,
+                  "next_review_at": "2026-11-18 10:41:59 +0100"
+                },
+                {
+                  "id": "c4110aea-8352-453c-b0fc-0987a3f40cf8",
+                  "study": false,
+                  "term": "зал",
+                  "context": "",
+                  "meaning": "zaal",
+                  "interval": 1,
+                  "next_review_at": "2026-11-18 10:41:59 +0100"
+                },
+                {
+                  "id": "f8adca11-c16e-463b-be6e-77db259df692",
+                  "study": false,
+                  "term": "извини́(те)",
+                  "context": "",
+                  "meaning": "pardon, neem mij (neemt u mij) niet kwalijk",
+                  "interval": 1,
+                  "next_review_at": "2026-11-18 10:41:59 +0100"
+                },
+                {
+                  "id": "135ae111-7443-4c88-8d05-971d78f8bfa8",
+                  "study": false,
+                  "term": "пожа́луйста",
+                  "context": "",
+                  "meaning": "alsjeblieft, alstublieft",
+                  "interval": 1,
+                  "next_review_at": "2026-11-18 10:41:59 +0100"
+                },
+                {
+                  "id": "1fc40552-37e3-4e42-b758-dae93e581239",
+                  "study": false,
+                  "term": "как",
+                  "context": "",
+                  "meaning": "hoe",
+                  "interval": 1,
+                  "next_review_at": "2026-11-18 10:41:59 +0100"
+                },
+                {
+                  "id": "69fa754b-5337-4f4f-aaf9-66cf53824ef8",
+                  "study": false,
+                  "term": "о́чень",
+                  "context": "",
+                  "meaning": "zeer, erg",
+                  "interval": 1,
+                  "next_review_at": "2026-11-18 10:41:59 +0100"
+                },
+                {
+                  "id": "5101ab0c-5232-456d-8f74-b78246aa5757",
+                  "study": true,
+                  "term": "прия́тно",
+                  "context": "",
+                  "meaning": "aangenaam, prettig",
+                  "interval": 1,
+                  "next_review_at": "2026-11-18 10:41:59 +0100"
+                },
+                {
+                  "id": "4affab59-f8f9-4a08-a4e1-01d9a3c03fe7",
+                  "study": true,
+                  "term": "о́ченъ прия́тно",
+                  "context": "",
+                  "meaning": "leuk / aangenaam kennis met je te maken, aangenaam",
+                  "interval": 1,
+                  "next_review_at": "2026-11-18 10:41:59 +0100"
+                },
+                {
+                  "id": "88db3339-0537-4c61-a3c0-75c73b54feba",
+                  "study": true,
+                  "term": "наш, на́ша, на́ше",
+                  "context": "",
+                  "meaning": "ons, onze, van ons",
+                  "interval": 1,
+                  "next_review_at": "2026-11-18 10:41:59 +0100"
+                },
+                {
+                  "id": "24a60234-08fb-40ec-85da-5b6cd893177a",
+                  "study": false,
+                  "term": "гид",
+                  "context": "",
+                  "meaning": "gids",
+                  "interval": 1,
+                  "next_review_at": "2026-11-18 10:41:59 +0100"
+                },
+                {
+                  "id": "66d385d3-0622-4035-bb43-edd034ae4a8c",
+                  "study": false,
+                  "term": "где",
+                  "context": "",
+                  "meaning": "waar",
+                  "interval": 1,
+                  "next_review_at": "2026-11-18 10:41:59 +0100"
+                },
+                {
+                  "id": "00dacc4c-d307-4bb2-8fa7-a6da2e678b28",
+                  "study": false,
+                  "term": "програ́мма",
+                  "context": "",
+                  "meaning": "programma, programmaboekje",
+                  "interval": 1,
+                  "next_review_at": "2026-11-18 10:41:59 +0100"
+                },
+                {
+                  "id": "7b4f683b-86e7-4a9a-a283-15f098f45e90",
+                  "study": true,
+                  "term": "мой, моя́, моё",
+                  "context": "",
+                  "meaning": "mijn, van mij",
+                  "interval": 1,
+                  "next_review_at": "2026-11-18 10:41:59 +0100"
+                },
+                {
+                  "id": "4335eeb0-aea1-4070-8b58-f6834b9cc936",
+                  "study": false,
+                  "term": "но́мер",
+                  "context": "",
+                  "meaning": "hotelkamer, nummer",
+                  "interval": 1,
+                  "next_review_at": "2026-11-18 10:41:59 +0100"
+                },
+                {
+                  "id": "cfbe607a-52e2-45bd-90b8-74a6026f8908",
+                  "study": true,
+                  "term": "на + 6e nv.",
+                  "context": "",
+                  "meaning": "op, in",
+                  "interval": 1,
+                  "next_review_at": "2026-11-18 10:41:59 +0100"
+                },
+                {
+                  "id": "96d906d3-f8e8-41d6-b755-7bea78360cfa",
+                  "study": false,
+                  "term": "стол",
+                  "context": "",
+                  "meaning": "tafel",
+                  "interval": 1,
+                  "next_review_at": "2026-11-18 10:41:59 +0100"
+                },
+                {
+                  "id": "6f0757f5-6ee1-4894-9315-12dbbaf16d66",
+                  "study": false,
+                  "term": "рестора́н",
+                  "context": "",
+                  "meaning": "restaurant",
+                  "interval": 1,
+                  "next_review_at": "2026-11-18 10:41:59 +0100"
+                },
+                {
+                  "id": "bb140f4c-75ff-4a51-aa21-73716a9defc6",
+                  "study": true,
+                  "term": "вы знако́мы?",
+                  "context": "",
+                  "meaning": "kennen jullie elkaar, kent u elkaar?",
+                  "interval": 1,
+                  "next_review_at": "2026-11-18 10:41:59 +0100"
+                },
+                {
+                  "id": "a2dc9373-b4c6-4e64-9f3e-84cfa2cdd83f",
+                  "study": true,
+                  "term": "познако́мътесъ",
+                  "context": "",
+                  "meaning": "maakt u kennis",
+                  "interval": 1,
+                  "next_review_at": "2026-11-18 10:41:59 +0100"
+                },
+                {
+                  "id": "7d8ca674-9784-4f5b-92f4-1b717e0a1615",
+                  "study": true,
+                  "term": "твой, твоя́, твоё",
+                  "context": "",
+                  "meaning": "jouw, van jou",
+                  "interval": 1,
+                  "next_review_at": "2026-11-18 10:41:59 +0100"
+                },
+                {
+                  "id": "e5becbcd-0254-4a40-a649-33a2a3d8a033",
+                  "study": false,
+                  "term": "меню́ (onzijdig; wordt niet verbogen)",
+                  "context": "",
+                  "meaning": "menu",
+                  "interval": 1,
+                  "next_review_at": "2026-11-18 10:41:59 +0100"
+                },
+                {
+                  "id": "5888453e-1792-4751-8337-0d1b32358a0b",
+                  "study": false,
+                  "term": "официа́нт",
+                  "context": "",
+                  "meaning": "ober, kelner",
+                  "interval": 1,
+                  "next_review_at": "2026-11-18 10:41:59 +0100"
+                },
+                {
+                  "id": "59f6d618-9fc4-4c0d-a602-cbf7b0572485",
+                  "study": false,
+                  "term": "спаси́бо",
+                  "context": "",
+                  "meaning": "dank je, dank u",
+                  "interval": 1,
+                  "next_review_at": "2026-11-18 10:41:59 +0100"
+                },
+                {
+                  "id": "56cd5911-7138-4055-b8e3-24fddfd9853c",
+                  "study": false,
+                  "term": "бар",
+                  "context": "",
+                  "meaning": "bar",
+                  "interval": 1,
+                  "next_review_at": "2026-11-18 10:41:59 +0100"
+                },
+                {
+                  "id": "c7d6bfaf-19bb-489b-9597-8a7cb85eeb00",
+                  "study": true,
+                  "term": "мы знако́мы",
+                  "context": "",
+                  "meaning": "wij kennen elkaar",
+                  "interval": 1,
+                  "next_review_at": "2026-11-18 10:41:59 +0100"
+                },
+                {
+                  "id": "078e4163-9b1c-4863-9b75-9eefc9f20439",
+                  "study": true,
+                  "term": "ещё",
+                  "context": "",
+                  "meaning": "nog",
+                  "interval": 1,
+                  "next_review_at": "2026-11-18 10:41:59 +0100"
+                },
+                {
+                  "id": "62e25a81-1271-4290-89e4-9e455a757141",
+                  "study": false,
+                  "term": "сейца́с",
+                  "context": "",
+                  "meaning": "nu, op dit moment",
+                  "interval": 1,
+                  "next_review_at": "2026-11-18 10:41:59 +0100"
+                },
+                {
+                  "id": "002af5af-d28b-4e13-83fb-af5196b789b9",
+                  "study": false,
+                  "term": "там",
+                  "context": "",
+                  "meaning": "daar",
+                  "interval": 1,
+                  "next_review_at": "2026-11-18 10:41:59 +0100"
+                },
+                {
+                  "id": "b30fdb23-fb1f-4b85-844b-e4f7c108fcb7",
+                  "study": false,
+                  "term": "конфере́нция",
+                  "context": "",
+                  "meaning": "conferentie",
+                  "interval": 1,
+                  "next_review_at": "2026-11-18 10:41:59 +0100"
+                },
+                {
+                  "id": "4f21c095-ef89-44c6-a1c8-6a1501ac62e3",
+                  "study": true,
+                  "term": "био́лог",
+                  "context": "",
+                  "meaning": "bioloog",
+                  "interval": 1,
+                  "next_review_at": "2026-11-18 10:41:59 +0100"
+                },
+                {
+                  "id": "46721470-f8e6-40da-8680-b57bfcf7c8b0",
+                  "study": true,
+                  "term": "репети́ция",
+                  "context": "",
+                  "meaning": "repetitie",
+                  "interval": 1,
+                  "next_review_at": "2026-11-18 10:41:59 +0100"
+                },
+                {
+                  "id": "ebe0582a-cbfc-4802-a36d-c155ada73859",
+                  "study": false,
+                  "term": "лифт",
+                  "context": "",
+                  "meaning": "lift",
+                  "interval": 1,
+                  "next_review_at": "2026-11-18 10:41:59 +0100"
+                },
+                {
+                  "id": "d4154ba9-96f9-4051-a142-3dbcd7cb4c83",
+                  "study": false,
+                  "term": "журна́л",
+                  "context": "",
+                  "meaning": "tijdschrift",
+                  "interval": 1,
+                  "next_review_at": "2026-11-18 10:41:59 +0100"
+                },
+                {
+                  "id": "b3bbfae3-2fe6-4f5d-a6bb-c81e6e660122",
+                  "study": true,
+                  "term": "рублъ (mannelijk)",
+                  "context": "",
+                  "meaning": "roebel",
+                  "interval": 1,
+                  "next_review_at": "2026-11-18 10:41:59 +0100"
+                },
+                {
+                  "id": "58d44bb1-02e0-4aed-8d4b-166fdb9f3878",
+                  "study": false,
+                  "term": "газе́та",
+                  "context": "",
+                  "meaning": "krant",
+                  "interval": 1,
+                  "next_review_at": "2026-11-18 10:41:59 +0100"
+                },
+                {
+                  "id": "85570592-7229-4124-9d6a-f82ee956f56d",
+                  "study": true,
+                  "term": "неде́ля",
+                  "context": "",
+                  "meaning": "week",
+                  "interval": 1,
+                  "next_review_at": "2026-11-18 10:41:59 +0100"
+                },
+                {
+                  "id": "0b4bd039-4e55-4bab-a7b6-1225065aa3df",
+                  "study": false,
+                  "term": "вино́",
+                  "context": "",
+                  "meaning": "wijn",
+                  "interval": 1,
+                  "next_review_at": "2026-11-18 10:41:59 +0100"
+                },
+                {
+                  "id": "e0d0c1a2-4e81-4391-a2c7-3aeb9f8980e9",
+                  "study": true,
+                  "term": "мо́ре",
+                  "context": "",
+                  "meaning": "zee",
+                  "interval": 1,
+                  "next_review_at": "2026-11-18 10:41:59 +0100"
+                },
+                {
+                  "id": "6f23d5a8-b417-4c24-87bc-8c9e20aa803d",
+                  "study": true,
+                  "term": "Нидерла́нды",
+                  "context": "",
+                  "meaning": "Nederland",
+                  "interval": 1,
+                  "next_review_at": "2026-11-18 10:41:59 +0100"
+                },
+                {
+                  "id": "7d7a25d6-6f24-48a2-b666-e6de044f4503",
+                  "study": true,
+                  "term": "Бе́льгия",
+                  "context": "",
+                  "meaning": "België",
+                  "interval": 1,
+                  "next_review_at": "2026-11-18 10:41:59 +0100"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

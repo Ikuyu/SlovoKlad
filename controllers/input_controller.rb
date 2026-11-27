@@ -1607,7 +1607,18 @@ def handle_command_mode_input(key, modifiers, has_ctrl_check, has_alt_check, has
     end
 
     if is_legal
-      execute_statusbar_command(clean_key) if respond_to?(:execute_statusbar_command)
+      command_success = execute_statusbar_command(clean_key) if respond_to?(:execute_statusbar_command)
+
+      if command_success
+        @command_mode_visible = false if defined?(@command_mode_visible)
+        @statusbar_field.is_focused = false if defined?(@statusbar_field) && @statusbar_field
+        @statusbar_field.text = '' if defined?(@statusbar_field) && @statusbar_field
+        @statusbar_field.cursor_index = 0 if @statusbar_field.respond_to?(:cursor_index=, true)
+        @active_focus = @menu_origin_focus || :tree
+        @last_focus = @active_focus
+        @menu_origin_focus = nil
+      end
+
       return true
     else
       @statusbar_field.text = '' if defined?(@statusbar_field) && @statusbar_field
@@ -1658,6 +1669,7 @@ def handle_command_mode_input(key, modifiers, has_ctrl_check, has_alt_check, has
                       end
 
     if command_success
+      @command_mode_visible = false if defined?(@command_mode_visible)
       @statusbar_field.is_focused = false
       @statusbar_field.text = ''
 
@@ -1720,7 +1732,9 @@ def handle_global_input_shortcuts(key, modifiers, key_raw_check, has_ctrl_check,
 
   # Verwerk het wisselen van tabelscheidingslijnen apart.
   return true if handle_table_divider_shortcut(key_raw_check, popup_is_active)
-  return true if has_shift_check && key_raw_check.to_s.downcase == 'a' && !popup_is_active && toggle_alternate_rows
+  if has_shift_check && !has_ctrl_check && key_raw_check.to_s.downcase == 'a' && !popup_is_active && toggle_alternate_rows
+    return true
+  end
 
   # Handle the help shortcut separately to keep other global shortcuts clear.
   return true if handle_global_help_shortcut(
