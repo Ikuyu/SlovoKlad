@@ -1460,7 +1460,7 @@ module TreeInputHandler
 
     @popup.show(
       type: :form,
-      title: " #{AppConfig.settings.language_string(:tree_title_rename)} ",
+      title: "#{AppConfig.settings.language_string(:tree_title_rename)}",
       fields: { name: name_field }
     ) do |form_data|
       settings = AppConfig.settings

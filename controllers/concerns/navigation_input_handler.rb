@@ -500,14 +500,14 @@ module NavigationInputHandler
     return if defined?(@popup) && @popup && @popup.respond_to?(:active?) && @popup.active?
 
     # Define the sequence loop of installed aesthetic color palettes
-    available_themes = %i[dark light bw cga crt amber borland ttx c64 tos terminal]
+    available_themes = %i[default bw cga crt amber borland ttx c64 tos terminal]
 
     # 1. Fetch the currently active design theme layout string from AppConfig
     current_theme = settings.respond_to?(:theme) ? settings.theme : :dark
     current_theme = current_theme.to_s.strip.downcase.to_sym
 
     # Alias conversion layer to keep the index tracker stable
-    current_theme = :dark if %i[classic standard dark].include?(current_theme)
+    current_theme = :default if %i[classic standard default].include?(current_theme)
 
     current_idx = available_themes.index(current_theme) || 0
 
@@ -566,7 +566,7 @@ module NavigationInputHandler
       handle_replace_mode_tab(is_deck_active)
     when :menu
       @menu_dropdown_open = false
-      @active_focus = @menu_origin_focus || :tree
+      @active_focus = :tree
       @last_focus = @active_focus
       @menu_origin_focus = nil
     end

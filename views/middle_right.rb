@@ -1212,8 +1212,11 @@ def table_row_style(selected, visually_active, colors, alternate_background = ni
     # 2. Popup/Menu/Command-mode actief EN table was de diepe herkomst ➔ Gedimd vasthouden!
     { fg: colors[:selected_fg], bg: colors[:selected_bg], modifiers: [:dim] }
   else
-    # 3. Ruststand: Focus ligt bij de Tree ➔ Verberg de balk volledig
-    { fg: colors[:foreground], modifiers: [:dim] }
+    # 3. Ruststand: Focus ligt bij de Tree ➔ Verberg de balk,
+    # maar behoud de alternate row background.
+    style = { fg: colors[:foreground], modifiers: [:dim] }
+    style[:bg] = alternate_background if alternate_background
+    style
   end
 end
 

@@ -20,7 +20,8 @@ Dir[File.join(__dir__, 'config', '*.rb')].sort.each { |file| require_relative fi
 require_relative 'config/cli_handler'
 target_file = CliHandler.handle_arguments
 
-# If a filename was passed through the terminal, persist it in the settings.
+AppConfig.settings.load
+
 if target_file && !target_file.empty?
   target_file = "#{target_file}.json" if File.extname(target_file).empty?
   AppConfig.settings.last_opened_filename = target_file
@@ -79,9 +80,9 @@ class RatatuiRubyApp
     # 👉 Open the saved path directly instead of searching by name.
     # If the file is missing or has a syntax error, restore :default.
     # =========================================================================
-    saved_theme = settings.respond_to?(:theme) ? settings.theme : :dark
+    saved_theme = settings.respond_to?(:theme) ? settings.theme : :default
     saved_theme_sym = saved_theme.to_s.strip.downcase.to_sym
-    built_in_themes = %i[dark light bw cga crt amber borland ttx c64 tos terminal]
+    built_in_themes = %i[default bw cga crt amber borland ttx c64 tos terminal]
 
     # Retrieve the saved path.
     saved_theme_path = if settings.respond_to?(:custom_theme_path)
@@ -127,9 +128,9 @@ class RatatuiRubyApp
       rescue Exception
         # 🚨 EMERGENCY FALLBACK: If the file is corrupt, missing, or moved, restore :default unconditionally!
         if settings.respond_to?(:theme=)
-          settings.theme = :dark
+          settings.theme = :default
         elsif settings.respond_to?(:set_theme)
-          settings.set_theme(:dark)
+          settings.set_theme(:default)
         end
 
         # Thoroughly clear the custom configuration caches.
@@ -162,10 +163,11 @@ class RatatuiRubyApp
     return unless settings.theme.to_sym == :terminal
 
     resolver = TerminalThemeResolver.new
+    resolver.load_colors
 
     resolved = resolver.resolve(
       AppThemes::THEME_DATA[:terminal],
-      AppThemes::THEME_DATA[:dark]
+      AppThemes::THEME_DATA[:default]
     )
 
     resolved = resolver.apply_terminal_contrast(resolved)

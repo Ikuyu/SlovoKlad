@@ -1964,9 +1964,9 @@ module StatusbarInputHandler
       true
     else
       theme_aliases = {
-        'default' => :dark,
-        'classic' => :dark,
-        'standard' => :dark,
+        'default' => :default,
+        'classic' => :default,
+        'standard' => :default,
         'monochrome' => :bw,
         'blackwhite' => :bw,
         'mono' => :bw,
@@ -1975,12 +1975,14 @@ module StatusbarInputHandler
         'green' => :crt,
         'blue' => :borland,
         'lila' => :c64,
+        'purple' => :c64,
         'brown' => :amber,
         'yellow' => :amber,
         'orange' => :amber,
         'teletext' => :ttx,
         'atari' => :tos,
-        'gray' => :tos
+        'gray' => :tos,
+        'light' => :tos
       }
 
       theme_sym = theme_aliases.fetch(
@@ -1999,6 +2001,7 @@ module StatusbarInputHandler
         return false if setting_already_in_use?(:theme, theme_sym.to_s)
 
         settings.theme = theme_sym
+        settings.theme_items.clear
         settings.custom_theme_name = nil
         settings.custom_theme_path = nil
         settings.save

@@ -918,7 +918,7 @@ module TableInputHandler
     @last_focus = :table
     @selected_table_rows = []
 
-    @popup.show(title: " #{AppConfig.settings.language_string(:table_title_add_card)} ", type: :form,
+    @popup.show(title: "#{AppConfig.settings.language_string(:table_title_add_card)}", type: :form,
                 fields: { term: RatinField.new(placeholder: AppConfig.settings.language_string(:table_placeholder_term)),
                           context: RatinField.new(placeholder: AppConfig.settings.language_string(:table_placeholder_context)),
                           meaning: RatinField.new(placeholder: AppConfig.settings.language_string(:table_placeholder_meaning)) }) do |form_data|
@@ -1015,7 +1015,7 @@ module TableInputHandler
     @last_focus = :table
     @selected_table_rows = []
 
-    @popup.show(title: " #{AppConfig.settings.language_string(:table_title_edit_card)} ", type: :form,
+    @popup.show(title: "#{AppConfig.settings.language_string(:table_title_edit_card)}", type: :form,
                 fields: fields) do |form_data|
       # 🎯 DE RETOUR-BRANDMUUR: apply_table_edit_form geeft nu true of false terug.
       # Als de invoer ongeldig is (false), roepen we HIER binnen het blok 'next false' aan!

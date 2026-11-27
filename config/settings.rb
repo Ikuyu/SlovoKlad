@@ -26,9 +26,8 @@ module AppConfig
   }.freeze
 
   THEMES = {
-    dark: { label: 'Default Dark' },
-    light: { label: 'Default Light' },
-    bw: { label: 'Black&White' },
+    default: { label: 'Default' },
+    bw: { label: 'Black & White' },
     cga: { label: 'Retro ANSI' },
     crt: { label: 'CRT' },
     amber: { label: 'Amber' },
@@ -156,7 +155,7 @@ class Settings
   end
 
   def theme_item(item_key)
-    raw_theme = @theme || :dark
+    raw_theme = @theme || :default
     theme_sym = raw_theme.to_s.gsub(/\A:/, '').to_sym
 
     # Terminal en custom themes gebruiken dynamische kleuren
@@ -168,7 +167,7 @@ class Settings
     end
 
     theme_table = AppThemes::THEME_DATA.fetch(theme_sym) do
-      AppThemes::THEME_DATA[:dark]
+      AppThemes::THEME_DATA[:default]
     end
 
     key = item_key.to_sym
@@ -247,8 +246,9 @@ class Settings
     )
 
     saved_theme_val = loaded_data[:theme]
+
     saved_theme_sym = saved_theme_val.to_s.gsub(/\A:/, '').to_sym unless saved_theme_val.nil?
-    ingebouwde_themas = %i[dark light bw cga crt amber borland ttx c64 tos terminal]
+    ingebouwde_themas = %i[default bw cga crt amber borland ttx c64 tos terminal]
 
     @theme = if saved_theme_sym && !ingebouwde_themas.include?(saved_theme_sym)
                saved_theme_sym # Retain the custom theme symbol cleanly
